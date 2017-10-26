@@ -36,9 +36,9 @@ app.use(function (req, res, next) {
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.engine('.html', ejs.__express);
-app.set('view engine', 'html');
-
+// app.engine('.html', ejs.__express);
+// app.set('view engine', 'html');
+app.set('view engine', 'ejs');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -55,6 +55,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 定义应用级路由
 app.use('/', require('./routes/index'));
 app.use('/users', require('./routes/users'));
+app.use('/stars', require('./routes/stars'));
+app.use('/wanghong', require('./routes/wanghong'));
+
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

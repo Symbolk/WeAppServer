@@ -23,11 +23,25 @@ db.once('open', function () {
   // create the user schema
   var UserSchema = new mongoose.Schema({
 	username: { type:String, required:true, unique:true, index:true },
-	avatar:   { type:String, default:'images/placeholder.png'},
-	password: { type:String },
-	joindate: { type:Date, default:Date.now },
-	points:   { type:Number },
-	rank:     { type:Number },
+	avatar:   { type:String },
+    title:    { type:String },
+    favStar: { 
+        starname: { type: String },
+        contribution: { type: Number }
+    }, // guarding star
+	lovingToday:[ // at most 3 for one day
+        { 
+            starname: { type: String }, 
+            date: { type: Date }
+        }
+    ],
+	lovingEver:[
+        {
+            starname: { type: String },
+            contribution: { type: Number }
+        }
+    ]
+	// rank:     { type:Number }
 },
     // When no collection argument is passed, Mongoose pluralizes the name.
     { collection: 'users' }
@@ -36,27 +50,38 @@ db.once('open', function () {
 // UserSchema.set('collection', 'users');
 var User = mongoose.model('User', UserSchema, 'users');
 console.log('User Model Created.');
-// create graph schema
-var GraphSchema = new mongoose.Schema({
-    from: { type: Number },
-    to: { type: Number },
-    supNum: { type: Number },
-    oppNum: { type: Number },
-    supporters: [
+
+
+// create star schema
+var StarSchema = new mongoose.Schema({
+    starname: { type:String, required:true, unique:true, index:true },
+    sex: { type: String }, //male or female
+	avatar:   { type:String },
+    flowernum:    { type:Number },
+    score: { type: Number},
+    // rank: { type: Number }
+}, { collection: 'stars' });
+var Star = mongoose.model('Star', StarSchema, 'stars');
+console.log('Star Model Created.');
+
+// create wanghong(网红) schema
+var WanghongSchema = new mongoose.Schema({
+    whname: { type:String, required:true, unique:true, index:true },
+    sex: { type : String },
+	avatar:   { type:String },
+    flowernum:    { type:Number },
+    score: { type: Number},
+    // rank: { type: Number }
+    weibo:  { type:String },
+    baike:  { type:String },
+    links:[
         {
-            username: { type: String },
-            direction: { type: String },
-        }
-    ],
-    opposers: [
-        {
-            username: { type: String },
-            direction: { type: String },
+            link: { type: String }
         }
     ]
-}, { collection: 'graph' });
-var Link = mongoose.model('Link', GraphSchema, 'graph');
-console.log('Graph Model Created.');
+}, { collection: 'wanghongs' });
+var Wanghong = mongoose.model('Wanghong', WanghongSchema, 'wanghongs');
+console.log('Wanghong Model Created.');
 
 db.on('disconnected', function () {
     console.log('Mongoose connection disconnected');
