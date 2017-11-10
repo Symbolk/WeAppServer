@@ -30,6 +30,7 @@ router.get('/init', function(req, res) {
            console.log(err);
        }else{
         console.log('++ '+operation.starname);
+        res.send({msg:'++'});
        }
    })
 });
@@ -48,26 +49,28 @@ router.post('/loveStar', function(req, res) {
             console.log(err);
         }else{
             console.log(condition.starname+' +1');
+            condition={
+                username: req.body.username
+            };
+            operation={
+              $addToSet:{
+                lovingTody: {
+                    starname: req.body.starname,
+                    date: Date.now
+                }
+              }  
+            };
+            UserModel.update(condition, operation, function(err) {
+               if(err){
+                   console.log(err);
+               }else{
+                   console.log(condition.username + ' love '+ req.body.starname);
+               }
+               res.send({msg: starname+'+1'});
+            });
         }
     });
-    condition={
-        username: req.body.username
-    };
-    operation={
-      $addToSet:{
-        lovingTody: {
-            starname: req.body.starname,
-            date: Date.now
-        }
-      }  
-    };
-    UserModel.update(condition, operation, function(err) {
-       if(err){
-           console.log(err);
-       }else{
-           console.log(condition.username + ' love '+ req.body.starname);
-       }
-    });
+
 });
 
 router.get('/getAllStars', function(req, res){
