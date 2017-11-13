@@ -24,18 +24,18 @@ db.once('open', function () {
   var UserSchema = new mongoose.Schema({
 	username: { type:String, required:true, unique:true, index:true },
 	avatar:   { type:String },
-    title:    { type:String },
+    title:    { type:String, default:"青铜" },
     favStar: { 
         starname: { type: String },
         contribution: { type: Number }
     }, // guarding star
-	lovingToday:[ // at most 3 for one day
+	floweredToday:[ // at most 3 for one day
         { 
             starname: { type: String }, 
-            date: { type: Date }
+            date: { type: Date}
         }
     ],
-	lovingEver:[
+	flowerHistory:[
         {
             starname: { type: String },
             contribution: { type: Number }
@@ -59,7 +59,6 @@ var StarSchema = new mongoose.Schema({
 	avatar:   { type:String },
     flowernum:    { type:Number },
     score: { type: Number},
-    // rank: { type: Number }
 }, { collection: 'stars' });
 var Star = mongoose.model('Star', StarSchema, 'stars');
 console.log('Star Model Created.');
