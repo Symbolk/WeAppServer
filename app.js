@@ -77,15 +77,15 @@ app.use(function (err, req, res, next) {
   res.render('error');
 });
 
-
+var config;
 if (app.get('env') === 'development') {
   // nodemon or npm test
-  const config = require('./config/dev');
+  config = require('./config/dev');
   app.listen(config.port);
   console.log('Listening on port : '+config.port);
 } else if (app.get('env') === 'production') {
   // npm start
-  const config = require('./config/pro');
+  config = require('./config/pro');
   app.listen(config.port);
   module.exports = app;
   console.log('Listening on port : '+config.port);
