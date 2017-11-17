@@ -5,9 +5,11 @@ var router = express.Router();
 const mongoose = require('mongoose');
 var StarModel = mongoose.model('Star');
 var UserModel = mongoose.model('User');
-var myDate=new Date();
+var myDate = new Date();
 
-/* GET users listing. */
+/**
+ * Get all stars in the database, as a string
+ */
 router.get('/', function (req, res, next) {
     StarModel.find({}, function (err, docs) {
         res.send(JSON.stringify(docs));
@@ -36,30 +38,97 @@ router.get('/init', function (req, res) {
     })
 });
 
-
+/**
+ * Flower one star
+ */
 router.post('/flowerStar', function (req, res) {
     let condition = {
         username: req.body.username
     };
-
     UserModel.findOne(condition, function (err, doc) {
         if (err) {
             console.log(err);
         } else {
-            if (doc.floweredToday.length < 3) {
+            let hasFlowered = doc.floweredToday.some(function (p) {
+                return (p.starname == req.body.starname);
+            });
+
+            if (!hasFlowered){
+                if (doc.floweredToday.length < 3) {
+                    // add one flower for the star
+                    condition = {
+                        starname: req.body.starname
+                    };
+                    let operation = {
+                        $inc: {
+                            flowernum: 1
+                        }
+                    };
+                    StarModel.update(condition, operation, function (err) {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            res.send({ msg: req.body.starname + '+1', success: true });
+                        }
+                    });
+
+                    // add the star for the user
+                    condition = {
+                        username: req.body.username
+                    };
+                    operation = {
+                        $addToSet: {
+                            floweredToday: {
+                                starname: req.body.starname,
+                                date: myDate.getFullYear() + "-" + (myDate.getMonth() + 1) + "-" + myDate.getDay()
+                            }
+                        }
+                    };
+                    UserModel.update(condition, operation, function (err) {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            console.log(condition.username + ' flowered ' + req.body.starname);
+                        }
+                    });
+                } else {
+                    res.send({ msg: "没有赞了今天", success: false });
+                }
+            } else {
+                res.send({ msg: "今天已经赞过了", success: false });
+            }
+        }
+    });
+});
+
+/**
+ * Unflower a star
+ */
+router.post('/unflowerStar', function (req, res) {
+    let condition={
+        username: req.body.username        
+    };
+    UserModel.findOne(condition, function(err, doc){
+        if(err){
+            console.log(err);
+        }else{
+            let hasFlowered = doc.floweredToday.some(function (p) {
+                return (p.starname == req.body.starname);
+            });
+            if(hasFlowered){
                 condition = {
                     starname: req.body.starname
                 };
                 let operation = {
                     $inc: {
-                        flowernum: 1
+                        flowernum: -1
                     }
                 };
-                StarModel.update(condition, operation, function (err) {
+                StarModel.findOneAndUpdate(condition, operation, function (err) {
                     if (err) {
                         console.log(err);
                     } else {
-                        res.send({ msg: operation.starname + '+1', success: true });
+                        res.send({ msg: req.body.starname + '-1', success: true });
                     }
                 });
 
@@ -68,10 +137,9 @@ router.post('/flowerStar', function (req, res) {
                     username: req.body.username
                 };
                 operation = {
-                    $addToSet: {
+                    $pull: {
                         floweredToday: {
-                            starname: req.body.starname,
-                            date:  myDate.getFullYear()+"-"+(myDate.getMonth()+1)+"-"+myDate.getDate()
+                            starname: req.body.starname
                         }
                     }
                 };
@@ -79,18 +147,23 @@ router.post('/flowerStar', function (req, res) {
                     if (err) {
                         console.log(err);
                     } else {
-                        console.log(condition.username + ' flowered ' + req.body.starname);
+                        console.log(condition.username + ' unflowered ' + req.body.starname);
                     }
                 });
-            } else {
-                res.send({ msg: '没有赞了今天', success: false });
+            }else{
+                res.send({ msg: "今天还没有赞过ta呢", success: false });                
             }
         }
     });
 });
 
+/**
+ * Get all stars in the database as an array
+ */
 router.get('/getAllStars', function (req, res) {
-    StarModel.find({}, function (err, docs) {
+    StarModel.find({})
+    .sort({ flowernum: -1 })
+    .exec(function (err, docs) {
         if (err) {
             console.log(er);
         } else {
@@ -101,6 +174,54 @@ router.get('/getAllStars', function (req, res) {
             res.send({ data: allStarsList });
         }
     });
+});
+
+/**
+ * Get a limited number of stars(for one page display)
+ */
+router.get('/getNStars/:num', function (req, res) {
+    // or: find(Conditions,fields,options,callback);
+    // like:   Model.find({},null,{limit: 3, sort:{age:-1}},function(err,docs){
+    StarModel.find({})
+        .sort({ flowernum: -1 })
+        .limit(Number(req.params.num))
+        .exec(function (err, docs) {
+            if (err) {
+                console.log(err);
+            } else {
+                res.send(JSON.stringify(docs));
+            }
+        });
+});
+
+/**
+ * Get a limited number of stars(for one page display)
+ */
+router.get('/getMaleStars', function (req, res) {
+    StarModel.find({ sex: "male" })
+        .sort({ flowernum: -1 })
+        .exec(function (err, docs) {
+            if (err) {
+                console.log(err);
+            } else {
+                res.send(JSON.stringify(docs));
+            }
+        });
+});
+
+/**
+ * Get a limited number of stars(for one page display)
+ */
+router.get('/getFemaleStars', function (req, res) {
+    StarModel.find({ sex: "female" })
+        .sort({ flowernum: -1 })
+        .exec(function (err, docs) {
+            if (err) {
+                console.log(err);
+            } else {
+                res.send(JSON.stringify(docs));
+            }
+        });
 });
 
 module.exports = router;

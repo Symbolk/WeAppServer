@@ -57,7 +57,7 @@ var StarSchema = new mongoose.Schema({
     starname: { type:String, required:true, unique:true, index:true },
     sex: { type: String }, //male or female
 	avatar:   { type:String },
-    flowernum:    { type:Number },
+    flowernum:    { type:Number, default:0 },
     score: { type: Number},
 }, { collection: 'stars' });
 var Star = mongoose.model('Star', StarSchema, 'stars');
@@ -68,9 +68,8 @@ var WanghongSchema = new mongoose.Schema({
     whname: { type:String, required:true, unique:true, index:true },
     sex: { type : String },
 	avatar:   { type:String },
-    flowernum:    { type:Number },
+    flowernum:    { type:Number, default:0 },
     score: { type: Number},
-    // rank: { type: Number }
     weibo:  { type:String },
     baike:  { type:String },
     links:[
