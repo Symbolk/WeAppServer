@@ -44,7 +44,7 @@ router.post('/createUser', function (req, res, next) {
       console.log(err);
     } else {
       console.log('++User ' + req.body.username);
-      res.send({ msg: 'Welcome new '+ req.body.username});
+      res.send({ msg: 'Welcome new ' + req.body.username });
     }
   });
 });
@@ -52,19 +52,19 @@ router.post('/createUser', function (req, res, next) {
 /**
  * Get a user's info(only returns necessary data)
  */
-router.route('/getUserInfo/:username').get(function(req, res, next){
+router.route('/getUserInfo/:username').get(function (req, res, next) {
   updateInfo(req.params.username);
-  let fields={
-    _id:0,
+  let fields = {
+    _id: 0,
     username: 1,
     avatar: 1,
     title: 1,
     favStar: 1
   };
-  UserModel.findOne({ username: req.params.username }, fields, function(err, doc){
-    if(err){
+  UserModel.findOne({ username: req.params.username }, fields, function (err, doc) {
+    if (err) {
       console.log(err);
-    }else{
+    } else {
       res.send(doc);
     }
   });
@@ -74,8 +74,36 @@ router.route('/getUserInfo/:username').get(function(req, res, next){
  * Calculate the user's favStar and title
  */
 
-function updateInfo(username){
+function updateInfo(username) {
 
 }
 
+/**
+ * Judge if the star is flowered today
+ */
+router.get('/floweredToday/:username', function (req, res, next) {
+  UserModel.findOne({ username: req.params.username }, { _id: 0, floweredToday: 1 }, function (err, doc) {
+    if (err) {
+      console.log(err);
+    } else {
+      // let hasFlowered = doc.floweredToday.some(function (p) {
+      //   return (p.starname == req.params.starname);
+      // });
+      res.send(doc.floweredToday);
+    }
+  });
+});
+
+router.get('/floweredToday2/:username/:starname', function (req, res, next) {
+  UserModel.findOne({ username: req.params.username }, { _id: 0, floweredToday: 1 }, function (err, doc) {
+    if (err) {
+      console.log(err);
+    } else {
+      let hasFlowered = doc.floweredToday.some(function (p) {
+        return (p.starname == req.params.starname);
+      });
+      res.send({flowered: hasFlowered});
+    }
+  });
+});
 module.exports = router;

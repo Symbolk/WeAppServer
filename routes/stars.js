@@ -5,8 +5,21 @@ var router = express.Router();
 const mongoose = require('mongoose');
 var StarModel = mongoose.model('Star');
 var UserModel = mongoose.model('User');
-var myDate = new Date();
 
+function getNowFormatDate() {
+    var date = new Date();
+    var seperator1 = "-";
+    var month = date.getMonth() + 1;
+    var strDate = date.getDate();
+    if (month >= 1 && month <= 9) {
+        month = "0" + month;
+    }
+    if (strDate >= 0 && strDate <= 9) {
+        strDate = "0" + strDate;
+    }
+    var currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate;
+    return currentdate;
+}
 /**
  * Get all stars in the database, as a string
  */
@@ -22,6 +35,7 @@ router.get('/', function (req, res, next) {
  */
 router.get('/init', function (req, res) {
     let operation = {
+        id: 1,
         starname: '鹿晗',
         sex: 'female',
         avatar: 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1509010013642&di=0782e2c8a26cf02704a031967be809f3&imgtype=0&src=http%3A%2F%2Fimg.mp.itc.cn%2Fupload%2F20170708%2F13d8a274edb54ed5903ebb025759a97f_th.jpg',
@@ -80,7 +94,7 @@ router.post('/flowerStar', function (req, res) {
                         $addToSet: {
                             floweredToday: {
                                 starname: req.body.starname,
-                                date: myDate.getFullYear() + "-" + (myDate.getMonth() + 1) + "-" + myDate.getDay()
+                                date: getNowFormatDate()
                             }
                         }
                     };
@@ -160,21 +174,38 @@ router.post('/unflowerStar', function (req, res) {
 /**
  * Get all stars in the database as an array
  */
-router.get('/getAllStars', function (req, res) {
-    StarModel.find({})
-    .sort({ flowernum: -1 })
-    .exec(function (err, docs) {
+router.get('/getAllStars/:username', function (req, res) {
+    StarModel.find({}, {_id:0, id:1, starname:1, flowernum:1, avatar:1, floweredToday:1}, {sort:{ flowernum: -1 }}, function (err, docs) {
         if (err) {
-            console.log(er);
+            console.log(err);
         } else {
             let allStarsList = new Array();
-            for (let d of docs) {
+            for(let d of docs){
                 allStarsList.push(d);
             }
-            res.send({ data: allStarsList });
+            UserModel.findOne({ username: req.params.username }, {_id:0, floweredToday:1}, function(err, doc){
+                if(err){
+                    console.log(err);
+                }else{
+                    for(let d of allStarsList){
+                        let hasFlowered = doc.floweredToday.some(function (p) {
+                            return (p.starname == d.starname);
+                        });
+                        if(hasFlowered){
+                            d.floweredToday=true;
+                        }else{
+                            d.floweredToday=false;                      
+                        }
+                    }
+                    res.send({ data: allStarsList });
+                }
+            });
+        
         }
     });
 });
+
+
 
 /**
  * Get a limited number of stars(for one page display)

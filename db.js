@@ -32,7 +32,7 @@ db.once('open', function () {
 	floweredToday:[ // at most 3 for one day
         { 
             starname: { type: String }, 
-            date: { type: Date}
+            date: { type: String}
         }
     ],
 	flowerHistory:[
@@ -54,11 +54,13 @@ console.log('User Model Created.');
 
 // create star schema
 var StarSchema = new mongoose.Schema({
-    starname: { type:String, required:true, unique:true, index:true },
+    id: { type:Number, required:true, unique:true, index:true },
+    starname: { type:String, required:true},
     sex: { type: String }, //male or female
 	avatar:   { type:String },
     flowernum:    { type:Number, default:0 },
     score: { type: Number},
+    floweredToday: { type: Boolean, default:false } // whether is flowered by the current user today
 }, { collection: 'stars' });
 var Star = mongoose.model('Star', StarSchema, 'stars');
 console.log('Star Model Created.');
