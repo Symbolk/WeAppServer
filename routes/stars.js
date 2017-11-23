@@ -30,17 +30,17 @@ router.get('/', function (req, res, next) {
 });
 
 /**
- * TEMP
+ * ONLY FOR TEST
  * Create some data in the database
  */
-router.get('/init', function (req, res) {
+router.get('/createStar', function (req, res) {
     let operation = {
-        id: 1,
-        starname: '鹿晗',
-        sex: 'female',
-        avatar: 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1509010013642&di=0782e2c8a26cf02704a031967be809f3&imgtype=0&src=http%3A%2F%2Fimg.mp.itc.cn%2Fupload%2F20170708%2F13d8a274edb54ed5903ebb025759a97f_th.jpg',
-        flowernum: 999,
-        score: 999
+        id: 3,
+        starname: '李易峰',
+        sex: 'male',
+        avatar: 'http://img4.imgtn.bdimg.com/it/u=1343872547,3812704371&fm=27&gp=0.jpg',
+        flowernum: 245,
+        score: 200
     };
     StarModel.create(operation, function (err) {
         if (err) {

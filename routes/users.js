@@ -35,18 +35,27 @@ router.route('/exists/:username').get(function (req, res, next) {
 });
 
 router.post('/createUser', function (req, res, next) {
-  let operation = {
-    username: req.body.username,
-    avatar: req.body.avatar
-  };
-  UserModel.create(operation, function (err, doc) {
-    if (err) {
+  UserModel.find({}, function(err,docs){
+    if(err){
       console.log(err);
-    } else {
-      console.log('++User ' + req.body.username);
-      res.send({ msg: 'Welcome new ' + req.body.username });
+    }else{
+      let index=docs.length;
+      let operation = {
+        uid: index,
+        username: req.body.username,
+        avatar: req.body.avatar
+      };
+      UserModel.create(operation, function (err, doc) {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log('New user ' + req.body.username);
+          res.send({ msg: 'Welcome new ' + req.body.username });
+        }
+      });
     }
   });
+
 });
 
 /**

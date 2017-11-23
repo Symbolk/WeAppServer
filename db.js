@@ -22,8 +22,10 @@ db.once('open', function () {
 
   // create the user schema
   var UserSchema = new mongoose.Schema({
-	username: { type:String, required:true, unique:true, index:true },
-	avatar:   { type:String },
+    uid: { type:Number, required:true, unique:true, index:true },
+	username: { type:String, required:true},
+    avatar:   { type:String },
+	gender:   { type:String },    
     title:    { type:String, default:"青铜" },
     favStar: { 
         starname: { type: String },
@@ -67,7 +69,8 @@ console.log('Star Model Created.');
 
 // create wanghong(网红) schema
 var WanghongSchema = new mongoose.Schema({
-    whname: { type:String, required:true, unique:true, index:true },
+    wid: { type:Number, required:true, unique:true, index:true },
+    whname: { type:String, required:true },
     sex: { type : String },
 	avatar:   { type:String },
     flowernum:    { type:Number, default:0 },
