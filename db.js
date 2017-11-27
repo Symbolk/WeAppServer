@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const config=require('./config/dev');
-
+const schedule = require('node-schedule');
 const DB_URL = config.database;
 mongoose.connect(DB_URL, { useMongoClient: true });
 const db = mongoose.connection;
@@ -89,5 +89,22 @@ console.log('Wanghong Model Created.');
 db.on('disconnected', function () {
     console.log('Mongoose connection disconnected');
 });
+
+var rule = new schedule.RecurrenceRule();
+rule.hour =0;rule.minute =0;rule.second =0;
+// var rule='*/4 * * * * *';
+schedule.scheduleJob(rule, function(){
+    // update the user's flowered today list
+    User.update({}, 
+        { $set: { floweredToday: [] }},
+        {multi: true},function(err){
+        if(err){
+            console.log(err);
+        }else{
+            console.log("FloweredToday has been reset.");
+        }
+    });
+});
+
 
 module.exports = mongoose;

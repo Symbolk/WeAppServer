@@ -5,21 +5,8 @@ var router = express.Router();
 const mongoose = require('mongoose');
 var StarModel = mongoose.model('Star');
 var UserModel = mongoose.model('User');
+var util = require('./util.js');
 
-function getNowFormatDate() {
-    var date = new Date();
-    var seperator1 = "-";
-    var month = date.getMonth() + 1;
-    var strDate = date.getDate();
-    if (month >= 1 && month <= 9) {
-        month = "0" + month;
-    }
-    if (strDate >= 0 && strDate <= 9) {
-        strDate = "0" + strDate;
-    }
-    var currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate;
-    return currentdate;
-}
 /**
  * Get all stars in the database, as a string
  */
@@ -94,7 +81,7 @@ router.post('/flowerStar', function (req, res) {
                         $addToSet: {
                             floweredToday: {
                                 starname: req.body.starname,
-                                date: getNowFormatDate()
+                                date: util.getNowFormatDate()
                             }
                         }
                     };
@@ -175,7 +162,61 @@ router.post('/unflowerStar', function (req, res) {
  * Get all stars in the database as an array
  */
 router.get('/getAllStars/:username', function (req, res) {
+ 
     StarModel.find({}, {_id:0, id:1, starname:1, flowernum:1, avatar:1, floweredToday:1}, {sort:{ flowernum: -1 }}, function (err, docs) {
+        if (err) {
+            console.log(err);
+        } else {
+            let allStarsList = new Array();
+            for(let d of docs){
+                allStarsList.push(d);
+            }
+            UserModel.findOne({ username: req.params.username }, {_id:0, floweredToday:1}, function(err, doc){
+                if(err){
+                    console.log(err);
+                }else{
+                    for(let d of allStarsList){
+                        let hasFlowered = doc.floweredToday.some(function (p) {
+                            return (p.starname == d.starname);
+                        });
+                        if(hasFlowered){
+                            d.floweredToday=true;
+                        }else{
+                            d.floweredToday=false;                      
+                        }
+                    }
+                    res.send({ data: allStarsList });
+                }
+            });
+        }
+    });
+});
+
+
+
+/**
+ * Get a limited number of stars(for one page display)
+ */
+router.get('/getNStars/:num', function (req, res) {
+    // or: find(Conditions,fields,options,callback);
+    // like:   Model.find({},null,{limit: 3, sort:{age:-1}},function(err,docs){
+    StarModel.find({})
+        .sort({ flowernum: -1 })
+        .limit(Number(req.params.num))
+        .exec(function (err, docs) {
+            if (err) {
+                console.log(err);
+            } else {
+                res.send(JSON.stringify(docs));
+            }
+        });
+});
+
+/**
+ * Get a limited number of stars(for one page display)
+ */
+router.get('/getMaleStars/:username', function (req, res) {
+    StarModel.find({sex:'male'}, {_id:0, id:1, starname:1, flowernum:1, avatar:1,floweredToday:1}, {sort:{ flowernum: -1 }}, function (err, docs) {
         if (err) {
             console.log(err);
         } else {
@@ -205,54 +246,38 @@ router.get('/getAllStars/:username', function (req, res) {
     });
 });
 
-
-
 /**
  * Get a limited number of stars(for one page display)
  */
-router.get('/getNStars/:num', function (req, res) {
-    // or: find(Conditions,fields,options,callback);
-    // like:   Model.find({},null,{limit: 3, sort:{age:-1}},function(err,docs){
-    StarModel.find({})
-        .sort({ flowernum: -1 })
-        .limit(Number(req.params.num))
-        .exec(function (err, docs) {
-            if (err) {
-                console.log(err);
-            } else {
-                res.send(JSON.stringify(docs));
+router.get('/getFemaleStars/:username', function (req, res) {
+    StarModel.find({sex:'female'}, {_id:0, id:1, starname:1, flowernum:1, avatar:1,floweredToday:1}, {sort:{ flowernum: -1 }}, function (err, docs) {
+        if (err) {
+            console.log(err);
+        } else {
+            let allStarsList = new Array();
+            for(let d of docs){
+                allStarsList.push(d);
             }
-        });
-});
-
-/**
- * Get a limited number of stars(for one page display)
- */
-router.get('/getMaleStars', function (req, res) {
-    StarModel.find({ sex: "male" })
-        .sort({ flowernum: -1 })
-        .exec(function (err, docs) {
-            if (err) {
-                console.log(err);
-            } else {
-                res.send(JSON.stringify(docs));
-            }
-        });
-});
-
-/**
- * Get a limited number of stars(for one page display)
- */
-router.get('/getFemaleStars', function (req, res) {
-    StarModel.find({ sex: "female" })
-        .sort({ flowernum: -1 })
-        .exec(function (err, docs) {
-            if (err) {
-                console.log(err);
-            } else {
-                res.send(JSON.stringify(docs));
-            }
-        });
+            UserModel.findOne({ username: req.params.username }, {_id:0, floweredToday:1}, function(err, doc){
+                if(err){
+                    console.log(err);
+                }else{
+                    for(let d of allStarsList){
+                        let hasFlowered = doc.floweredToday.some(function (p) {
+                            return (p.starname == d.starname);
+                        });
+                        if(hasFlowered){
+                            d.floweredToday=true;
+                        }else{
+                            d.floweredToday=false;                      
+                        }
+                    }
+                    res.send({ data: allStarsList });
+                }
+            });
+        
+        }
+    });
 });
 
 module.exports = router;

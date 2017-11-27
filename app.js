@@ -9,6 +9,7 @@ const ejs = require('ejs');
 //var pkg = require('./package');
 require('./db');
 
+
 // 应用级中间件绑定到 app 对象 使用 app.use() 和 app.METHOD()
 var app = express();
 
@@ -76,6 +77,7 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
 
 var config;
 if (app.get('env') === 'development') {
