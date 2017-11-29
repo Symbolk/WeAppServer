@@ -60,14 +60,13 @@ router.post('/createUser', function (req, res, next) {
 });
 
 /**
- * Get a user's info(only returns necessary data)
+ * Get a user's info(including username, favStar, title)
  */
 router.route('/getUserInfo/:username').get(function (req, res, next) {
   updateInfo(req.params.username);
   let fields = {
     _id: 0,
     username: 1,
-    avatar: 1,
     title: 1,
     favStar: 1
   };
@@ -104,4 +103,29 @@ router.get('/floweredToday/:username/:starname', function (req, res, next) {
     }
   });
 });
+
+/**
+ * Get all ever flowered stars and the user's contributions
+ */
+router.route('/getEverStars/:username').get(function (req, res, next) {
+  let condition={
+    username: req.params.username
+  };
+  let fields = {
+    _id: 0,
+    flowerHistory:1
+  };
+  UserModel.findOne(condition, fields, function (err, doc) {
+    if (err) {
+      console.log(err);
+    } else {
+      let everFlowered = new Array();
+      for (let d of docs) {
+          everFlowered.push(d);
+      }
+      res.send(everFlowered);
+    }
+  });
+});
+
 module.exports = router;

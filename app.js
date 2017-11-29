@@ -47,10 +47,10 @@ app.set('view engine', 'ejs');
 console.log("Environment : "+process.env.NODE_ENV);
 var accessLog = fs.createWriteStream('logs/access.log', {flags : 'a'}); 
 if (app.get('env') == 'production') {
-  app.use(logger('common', { skip: function(req, res) { return res.statusCode < 400 }, stream: __dirname + 'logs/access.log' }));
+  app.use(logger('common', { skip: function(req, res) { return res.statusCode < 400 }, stream: accessLog }));
 } else {
-  app.use(logger('common', { stream: accessLog }));
-  // app.use(logger('dev'));
+  // app.use(logger('common', { stream: accessLog }));
+  app.use(logger('dev'));
 }
 //Node.js body parsing middleware. req.body
 app.use(bodyParser.json());

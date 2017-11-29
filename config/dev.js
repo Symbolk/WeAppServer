@@ -1,4 +1,6 @@
 module.exports = {
+    APPID: "wxfcfa83e078fc30db",
+    APPSEC: "b10028027ea2efd14259cf3f208d00ab",
     port: 3000,
     session: {
       secret: 'Toupaiyule',

@@ -28,8 +28,8 @@ db.once('open', function () {
 	username: { type:String, required:true}, // the nickName in Wechat, may not be unique
     avatar:   { type:String },
 	gender:   { type:String },    
-    title:    { type:String, default:"青铜" },
-    favStar: { 
+    title:    { type:String, default:"青铜" }, // according to his biggest contribution
+    favStar: {  // to whom his biggest contribution
         starname: { type: String },
         contribution: { type: Number }
     }, // guarding star
