@@ -42,6 +42,7 @@ router.post('/createUser', function (req, res, next) {
       let index=docs.length;
       let operation = {
         uid: index,
+        openid: req.body.openid,
         username: req.body.username,
         avatar: req.body.avatar
       };
@@ -90,20 +91,8 @@ function updateInfo(username) {
 /**
  * Judge if the star is flowered today
  */
-router.get('/floweredToday/:username', function (req, res, next) {
-  UserModel.findOne({ username: req.params.username }, { _id: 0, floweredToday: 1 }, function (err, doc) {
-    if (err) {
-      console.log(err);
-    } else {
-      // let hasFlowered = doc.floweredToday.some(function (p) {
-      //   return (p.starname == req.params.starname);
-      // });
-      res.send(doc.floweredToday);
-    }
-  });
-});
 
-router.get('/floweredToday2/:username/:starname', function (req, res, next) {
+router.get('/floweredToday/:username/:starname', function (req, res, next) {
   UserModel.findOne({ username: req.params.username }, { _id: 0, floweredToday: 1 }, function (err, doc) {
     if (err) {
       console.log(err);

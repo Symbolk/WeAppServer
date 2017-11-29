@@ -43,9 +43,10 @@ router.get('/createStar', function (req, res) {
  * Flower one star
  */
 router.post('/flowerStar', function (req, res) {
-    let condition = {
+    var condition = {
         username: req.body.username
     };
+    var operation = {};
     UserModel.findOne(condition, function (err, doc) {
         if (err) {
             console.log(err);
@@ -54,13 +55,13 @@ router.post('/flowerStar', function (req, res) {
                 return (p.starname == req.body.starname);
             });
 
-            if (!hasFlowered){
+            if (!hasFlowered) {
                 if (doc.floweredToday.length < 3) {
                     // add one flower for the star
                     condition = {
                         starname: req.body.starname
                     };
-                    let operation = {
+                    operation = {
                         $inc: {
                             flowernum: 1
                         }
@@ -92,6 +93,46 @@ router.post('/flowerStar', function (req, res) {
                             console.log(condition.username + ' flowered ' + req.body.starname);
                         }
                     });
+                    // add the user's contribution to all flowered stars
+                    UserModel.findOne(condition, { _id: 0, flowerHistory: 1 }, function (err, doc) {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            let everFlowered = doc.flowerHistory.some(function (p) {
+                                return (p.starname == req.body.starname);
+                            });
+                            if (everFlowered) {
+                                operation = {
+                                    $inc: {
+                                        "flowerHistory.$.contribution": 1
+                                    }
+                                };
+                                UserModel.update({ username: req.body.username, "flowerHistory.starname": req.body.starname }, operation, function (err) {
+                                    if (err) {
+                                        console.log(err);
+                                    } else {
+                                        console.log(condition.username+" contributed 1 to "+req.body.username);
+                                    }
+                                });
+                            } else {
+                                operation = {
+                                    $addToSet: {
+                                        flowerHistory: {
+                                            starname: req.body.starname,
+                                            contribution: 1
+                                        }
+                                    }
+                                };
+                                UserModel.update({ username: req.body.username }, operation, function (err) {
+                                    if (err) {
+                                        console.log(err);
+                                    } else {
+                                        console.log(condition.username+"newly contributed 1 to "+req.body.username);
+                                    }
+                                });
+                            }
+                        }
+                    });
                 } else {
                     res.send({ msg: "没有赞了今天", success: false });
                 }
@@ -106,21 +147,22 @@ router.post('/flowerStar', function (req, res) {
  * Unflower a star
  */
 router.post('/unflowerStar', function (req, res) {
-    let condition={
-        username: req.body.username        
+    let condition = {
+        username: req.body.username
     };
-    UserModel.findOne(condition, function(err, doc){
-        if(err){
+    let operation={};
+    UserModel.findOne(condition, function (err, doc) {
+        if (err) {
             console.log(err);
-        }else{
+        } else {
             let hasFlowered = doc.floweredToday.some(function (p) {
                 return (p.starname == req.body.starname);
             });
-            if(hasFlowered){
+            if (hasFlowered) {
                 condition = {
                     starname: req.body.starname
                 };
-                let operation = {
+                operation = {
                     $inc: {
                         flowernum: -1
                     }
@@ -151,8 +193,34 @@ router.post('/unflowerStar', function (req, res) {
                         console.log(condition.username + ' unflowered ' + req.body.starname);
                     }
                 });
-            }else{
-                res.send({ msg: "今天还没有赞过ta呢", success: false });                
+                // decrease the user's contribution to the unflowered star
+                UserModel.findOne(condition, { _id: 0, flowerHistory: 1 }, function (err, doc) {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        let everFlowered = doc.flowerHistory.some(function (p) {
+                            return (p.starname == req.body.starname);
+                        });
+                        if (everFlowered) { // to make sure
+                            operation = {
+                                $inc: {
+                                    "flowerHistory.$.contribution": -1
+                                }
+                            };
+                            UserModel.update({ username: req.body.username, "flowerHistory.starname": req.body.starname }, operation, function (err) {
+                                if (err) {
+                                    console.log(err);
+                                } else {
+                                    console.log(condition.username+" contributed 1 to "+req.body.username);
+                                }
+                            });
+                        } else {
+                            console.log("Unreachable case.");                            
+                        }
+                    }
+                });
+            } else {
+                res.send({ msg: "今天还没有赞过ta呢", success: false });
             }
         }
     });
@@ -162,27 +230,27 @@ router.post('/unflowerStar', function (req, res) {
  * Get all stars in the database as an array
  */
 router.get('/getAllStars/:username', function (req, res) {
- 
-    StarModel.find({}, {_id:0, id:1, starname:1, flowernum:1, avatar:1, floweredToday:1}, {sort:{ flowernum: -1 }}, function (err, docs) {
+
+    StarModel.find({}, { _id: 0, id: 1, starname: 1, flowernum: 1, avatar: 1, floweredToday: 1 }, { sort: { flowernum: -1 }, limit: 100 }, function (err, docs) {
         if (err) {
             console.log(err);
         } else {
             let allStarsList = new Array();
-            for(let d of docs){
+            for (let d of docs) {
                 allStarsList.push(d);
             }
-            UserModel.findOne({ username: req.params.username }, {_id:0, floweredToday:1}, function(err, doc){
-                if(err){
+            UserModel.findOne({ username: req.params.username }, { _id: 0, floweredToday: 1 }, function (err, doc) {
+                if (err) {
                     console.log(err);
-                }else{
-                    for(let d of allStarsList){
+                } else {
+                    for (let d of allStarsList) {
                         let hasFlowered = doc.floweredToday.some(function (p) {
                             return (p.starname == d.starname);
                         });
-                        if(hasFlowered){
-                            d.floweredToday=true;
-                        }else{
-                            d.floweredToday=false;                      
+                        if (hasFlowered) {
+                            d.floweredToday = true;
+                        } else {
+                            d.floweredToday = false;
                         }
                     }
                     res.send({ data: allStarsList });
@@ -216,32 +284,32 @@ router.get('/getNStars/:num', function (req, res) {
  * Get a limited number of stars(for one page display)
  */
 router.get('/getMaleStars/:username', function (req, res) {
-    StarModel.find({sex:'male'}, {_id:0, id:1, starname:1, flowernum:1, avatar:1,floweredToday:1}, {sort:{ flowernum: -1 }}, function (err, docs) {
+    StarModel.find({ sex: 'male' }, { _id: 0, id: 1, starname: 1, flowernum: 1, avatar: 1, floweredToday: 1 }, { sort: { flowernum: -1 } }, function (err, docs) {
         if (err) {
             console.log(err);
         } else {
             let allStarsList = new Array();
-            for(let d of docs){
+            for (let d of docs) {
                 allStarsList.push(d);
             }
-            UserModel.findOne({ username: req.params.username }, {_id:0, floweredToday:1}, function(err, doc){
-                if(err){
+            UserModel.findOne({ username: req.params.username }, { _id: 0, floweredToday: 1 }, function (err, doc) {
+                if (err) {
                     console.log(err);
-                }else{
-                    for(let d of allStarsList){
+                } else {
+                    for (let d of allStarsList) {
                         let hasFlowered = doc.floweredToday.some(function (p) {
                             return (p.starname == d.starname);
                         });
-                        if(hasFlowered){
-                            d.floweredToday=true;
-                        }else{
-                            d.floweredToday=false;                      
+                        if (hasFlowered) {
+                            d.floweredToday = true;
+                        } else {
+                            d.floweredToday = false;
                         }
                     }
                     res.send({ data: allStarsList });
                 }
             });
-        
+
         }
     });
 });
@@ -250,32 +318,32 @@ router.get('/getMaleStars/:username', function (req, res) {
  * Get a limited number of stars(for one page display)
  */
 router.get('/getFemaleStars/:username', function (req, res) {
-    StarModel.find({sex:'female'}, {_id:0, id:1, starname:1, flowernum:1, avatar:1,floweredToday:1}, {sort:{ flowernum: -1 }}, function (err, docs) {
+    StarModel.find({ sex: 'female' }, { _id: 0, id: 1, starname: 1, flowernum: 1, avatar: 1, floweredToday: 1 }, { sort: { flowernum: -1 } }, function (err, docs) {
         if (err) {
             console.log(err);
         } else {
             let allStarsList = new Array();
-            for(let d of docs){
+            for (let d of docs) {
                 allStarsList.push(d);
             }
-            UserModel.findOne({ username: req.params.username }, {_id:0, floweredToday:1}, function(err, doc){
-                if(err){
+            UserModel.findOne({ username: req.params.username }, { _id: 0, floweredToday: 1 }, function (err, doc) {
+                if (err) {
                     console.log(err);
-                }else{
-                    for(let d of allStarsList){
+                } else {
+                    for (let d of allStarsList) {
                         let hasFlowered = doc.floweredToday.some(function (p) {
                             return (p.starname == d.starname);
                         });
-                        if(hasFlowered){
-                            d.floweredToday=true;
-                        }else{
-                            d.floweredToday=false;                      
+                        if (hasFlowered) {
+                            d.floweredToday = true;
+                        } else {
+                            d.floweredToday = false;
                         }
                     }
                     res.send({ data: allStarsList });
                 }
             });
-        
+
         }
     });
 });

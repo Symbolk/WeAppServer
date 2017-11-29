@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const config=require('./config/dev');
+// const config=require('./config/pro');
 const schedule = require('node-schedule');
 const DB_URL = config.database;
 mongoose.connect(DB_URL, { useMongoClient: true });
@@ -22,8 +23,9 @@ db.once('open', function () {
 
   // create the user schema
   var UserSchema = new mongoose.Schema({
-    uid: { type:Number, required:true, unique:true, index:true },
-	username: { type:String, required:true},
+    uid: { type:Number, required:true, unique:true},
+    openid: { type: String, required:true, index: true}, // the unique identifier for one user
+	username: { type:String, required:true}, // the nickName in Wechat, may not be unique
     avatar:   { type:String },
 	gender:   { type:String },    
     title:    { type:String, default:"青铜" },
@@ -40,7 +42,7 @@ db.once('open', function () {
 	flowerHistory:[
         {
             starname: { type: String },
-            contribution: { type: Number }
+            contribution: { type: Number,default:0 }
         }
     ]
 	// rank:     { type:Number }

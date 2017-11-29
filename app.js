@@ -6,6 +6,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 const session = require('express-session');
 const ejs = require('ejs');
+var fs = require('fs');  
 //var pkg = require('./package');
 require('./db');
 
@@ -43,7 +44,14 @@ app.set('view engine', 'ejs');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
+console.log("Environment : "+process.env.NODE_ENV);
+var accessLog = fs.createWriteStream('logs/access.log', {flags : 'a'}); 
+if (app.get('env') == 'production') {
+  app.use(logger('common', { skip: function(req, res) { return res.statusCode < 400 }, stream: __dirname + 'logs/access.log' }));
+} else {
+  app.use(logger('common', { stream: accessLog }));
+  // app.use(logger('dev'));
+}
 //Node.js body parsing middleware. req.body
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -67,7 +75,6 @@ app.use(function (req, res, next) {
   next(err);
 });
 
-console.log(process.env.NODE_ENV);
 app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
