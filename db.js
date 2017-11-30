@@ -44,7 +44,8 @@ db.once('open', function () {
             starname: { type: String },
             contribution: { type: Number,default:0 }
         }
-    ]
+    ],
+    sumContribution: { type: Number, default:0 }
 	// rank:     { type:Number }
 },
     // When no collection argument is passed, Mongoose pluralizes the name.
@@ -58,7 +59,7 @@ console.log('User Model Created.');
 
 // create star schema
 var StarSchema = new mongoose.Schema({
-    id: { type:Number, required:true, unique:true, index:true },
+    sid: { type:Number, required:true, unique:true, index:true },
     starname: { type:String, required:true},
     sex: { type: String }, //male or female
 	avatar:   { type:String },

@@ -16,9 +16,9 @@ router.get('/', function (req, res, next) {
 /**
  * Check if one user exists in the system or not
  */
-router.route('/exists/:username').get(function (req, res, next) {
+router.route('/exists/:oid').get(function (req, res, next) {
   let condition = {
-    username: req.params.username
+    openid: req.params.oid
   };
 
   UserModel.count(condition, function (err, count) {
@@ -44,7 +44,8 @@ router.post('/createUser', function (req, res, next) {
         uid: index,
         openid: req.body.openid,
         username: req.body.username,
-        avatar: req.body.avatar
+        avatar: req.body.avatar,
+        sumContribution:0
       };
       UserModel.create(operation, function (err, doc) {
         if (err) {
@@ -79,37 +80,30 @@ router.route('/getUserInfo/:username').get(function (req, res, next) {
   });
 });
 
-/**
- * Calculate the user's favStar and title
- */
-
-function updateInfo(username) {
-
-}
 
 /**
  * Judge if the star is flowered today
  */
 
-router.get('/floweredToday/:username/:starname', function (req, res, next) {
-  UserModel.findOne({ username: req.params.username }, { _id: 0, floweredToday: 1 }, function (err, doc) {
-    if (err) {
-      console.log(err);
-    } else {
-      let hasFlowered = doc.floweredToday.some(function (p) {
-        return (p.starname == req.params.starname);
-      });
-      res.send({flowered: hasFlowered});
-    }
-  });
-});
+// router.get('/floweredToday/:username/:starname', function (req, res, next) {
+//   UserModel.findOne({ username: req.params.username }, { _id: 0, floweredToday: 1 }, function (err, doc) {
+//     if (err) {
+//       console.log(err);
+//     } else {
+//       let hasFlowered = doc.floweredToday.some(function (p) {
+//         return (p.starname == req.params.starname);
+//       });
+//       res.send({flowered: hasFlowered});
+//     }
+//   });
+// });
 
 /**
  * Get all ever flowered stars and the user's contributions
  */
-router.route('/getEverStars/:username').get(function (req, res, next) {
+router.route('/getEverStars/:oid').get(function (req, res, next) {
   let condition={
-    username: req.params.username
+    openid: req.params.oid
   };
   let fields = {
     _id: 0,
@@ -126,6 +120,58 @@ router.route('/getEverStars/:username').get(function (req, res, next) {
       res.send(everFlowered);
     }
   });
+
+});
+
+/**
+ * Get all users and rank them
+ */
+router.route('/getAllUsers').get(function(req, res, next){
+  let fields={
+    _id: 0,
+    username: 1,
+    openid: 1,// just to make sure unique
+    avatar: 1,
+    title: 1,
+    flowerHistory: 1,
+    favStar: 1,
+    sumContribution: 1
+  };
+  
+  UserModel.find({}, fields,  { sort: { sumContribution: -1 }, limit: 100 }, function(err, docs){
+    if(err){
+      console.log(err);
+    }else{
+      // recompute the favStar and sum contribution for all users
+      let usersList = new Array();
+      for (let d of docs) {
+        let sum_contri=0;
+        // find the fav star
+        if(d.flowerHistory.length>0){
+          var fav=d.flowerHistory[0];
+          for(let fh of d.flowerHistory){
+            sum_contri+=fh.contribution;
+            if(fh.contribution > fav.contribution){
+              fav=fh;
+            }
+          }
+        }
+        d.sumContribution=sum_contri;
+        d.favStar=fav;
+        usersList.push(d);
+        // update the database
+        UserModel.update({ openid: d.openid },
+          { $set: {favStar: fav, sumContribution: sum_contri}},
+          function(err){
+            if(err){
+              console.log(err);
+            }
+          });
+      }
+      console.log(usersList);
+    }
+  });  
+
 });
 
 module.exports = router;

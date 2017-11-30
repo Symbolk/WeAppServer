@@ -8,6 +8,6 @@ module.exports = {
       maxAge: 2592000000
     },
     database: 'mongodb://localhost:27017/Toupaiyule',
-    url: 'http://localhost:5000/'
+    url: 'http://localhost:3000/'
   };
   
