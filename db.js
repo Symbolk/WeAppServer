@@ -27,13 +27,12 @@ db.once('open', function () {
     openid: { type: String, required:true, index: true}, // the unique identifier for one user
 	username: { type:String, required:true}, // the nickName in Wechat, may not be unique
     avatar:   { type:String },
-	gender:   { type:String },    
-    title:    { type:String, default:"青铜" }, // according to his biggest contribution
+	gender:   { type:String },
     // Star
-    favStar: {  // to whom his biggest contribution
-        starname: { type: String },
-        contribution: { type: Number }
-    }, // guarding star
+    // favStar: {  // to whom his biggest contribution
+    //     starname: { type: String },
+    //     contribution: { type: Number }
+    // }, // guarding star
 	floweredToday:[ // at most 3 for one day
         { 
             starname: { type: String }, 
@@ -46,7 +45,7 @@ db.once('open', function () {
             contribution: { type: Number,default:0 }
         }
     ],
-    sumContribution: { type: Number, default:0 },
+    // sumContribution: { type: Number, default:0 },
     // Wanghong
     floweredWHToday:[ // at most 3 for one day
         { 
@@ -59,8 +58,7 @@ db.once('open', function () {
             whname: { type: String },
             contribution: { type: Number,default:0 }
         }
-    ],
-	// rank:     { type:Number }
+    ]
 },
     // When no collection argument is passed, Mongoose pluralizes the name.
     { collection: 'users' }
@@ -79,7 +77,14 @@ var StarSchema = new mongoose.Schema({
 	avatar:   { type:String },
     flowernum:    { type:Number, default:0 },
     score: { type: Number},
-    floweredToday: { type: Boolean, default:false } // whether is flowered by the current user today
+    floweredToday: { type: Boolean, default:false }, // whether is flowered by the current user today
+    supporters: [
+        {
+            openid: { type:String },
+            username: { type:String },
+            contribution: { type:Number, default:1 }
+        }
+    ]
 }, { collection: 'stars' });
 var Star = mongoose.model('Star', StarSchema, 'stars');
 console.log('Star Model Created.');

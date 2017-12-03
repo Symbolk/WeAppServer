@@ -4,6 +4,23 @@ var express = require('express');
 var router = express.Router();
 const mongoose = require('mongoose');
 var UserModel = mongoose.model('User');
+var compare = function (prop) {
+  return function (obj1, obj2) {
+      var val1 = obj1[prop];
+      var val2 = obj2[prop];
+      if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+          val1 = Number(val1);
+          val2 = Number(val2);
+      }
+      if (val1 < val2) {
+          return 1;
+      } else if (val1 > val2) {
+          return -1;
+      } else {
+          return 0;
+      }            
+  } 
+}
 
 
 /* GET users listing. */
@@ -63,22 +80,22 @@ router.post('/createUser', function (req, res, next) {
 /**
  * Get a user's info(including username, favStar, title)
  */
-router.route('/getUserInfo/:username').get(function (req, res, next) {
-  updateInfo(req.params.username);
-  let fields = {
-    _id: 0,
-    username: 1,
-    title: 1,
-    favStar: 1
-  };
-  UserModel.findOne({ username: req.params.username }, fields, function (err, doc) {
-    if (err) {
-      console.log(err);
-    } else {
-      res.send(doc);
-    }
-  });
-});
+// router.route('/getUserInfo/:username').get(function (req, res, next) {
+//   updateInfo(req.params.username);
+//   let fields = {
+//     _id: 0,
+//     username: 1,
+//     title: 1,
+//     favStar: 1
+//   };
+//   UserModel.findOne({ username: req.params.username }, fields, function (err, doc) {
+//     if (err) {
+//       console.log(err);
+//     } else {
+//       res.send(doc);
+//     }
+//   });
+// });
 
 
 /**
@@ -114,15 +131,28 @@ router.route('/getEverStars/:oid').get(function (req, res, next) {
     if (err) {
       console.log(err);
     } else {
-      let everFlowered = new Array();
-      for (let d of doc.flowerHistory) {
-          everFlowered.push(d);
+      // sort the flower history with flower num
+      let temp=doc.flowerHistory;
+      temp=temp.sort(compare("contribution"));
+      
+      let starnames = new Array();
+      let contributions = new Array();
+      if(temp.length <= 3){
+        for (let i=0;i<temp.length;i++) {
+          starnames.push(temp[i].starname);
+          contributions.push(temp[i].contribution);
+        }
+      }else{
+        for (let i=0;i<3;i++) {
+          starnames.push(temp[i].starname);
+          contributions.push(temp[i].contribution);
+        }
       }
-      res.send({data : everFlowered });
+      res.send({starnames : starnames, contributions: contributions });
     }
   });
-
 });
+
 
 /**
  * Get all users and rank them
@@ -133,10 +163,7 @@ router.route('/getAllUsers').get(function(req, res, next){
     username: 1,
     openid: 1,// just to make sure unique
     avatar: 1,
-    title: 1,
-    flowerHistory: 1,
-    favStar: 1,
-    sumContribution: 1
+    flowerHistory: 1
   };
   
   UserModel.find({}, fields,  { sort: { sumContribution: -1 }, limit: 100 }, function(err, docs){
@@ -144,31 +171,31 @@ router.route('/getAllUsers').get(function(req, res, next){
       console.log(err);
     }else{
       // recompute the favStar and sum contribution for all users
-      let usersList = new Array();
-      for (let d of docs) {
-        let sum_contri=0;
-        // find the fav star
-        if(d.flowerHistory.length>0){
-          var fav=d.flowerHistory[0];
-          for(let fh of d.flowerHistory){
-            sum_contri+=fh.contribution;
-            if(fh.contribution > fav.contribution){
-              fav=fh;
-            }
-          }
-        }
-        d.sumContribution=sum_contri;
-        d.favStar=fav;
-        usersList.push(d);
-        // update the database
-        UserModel.update({ openid: d.openid },
-          { $set: {favStar: fav, sumContribution: sum_contri}},
-          function(err){
-            if(err){
-              console.log(err);
-            }
-          });
-      }
+      // let usersList = new Array();
+      // for (let d of docs) {
+      //   let sum_contri=0;
+      //   // find the fav star
+      //   if(d.flowerHistory.length>0){
+      //     var fav=d.flowerHistory[0];
+      //     for(let fh of d.flowerHistory){
+      //       sum_contri+=fh.contribution;
+      //       if(fh.contribution > fav.contribution){
+      //         fav=fh;
+      //       }
+      //     }
+      //   }
+      //   d.sumContribution=sum_contri;
+      //   d.favStar=fav;
+      //   usersList.push(d);
+      //   // update the database
+      //   UserModel.update({ openid: d.openid },
+      //     { $set: {favStar: fav, sumContribution: sum_contri}},
+      //     function(err){
+      //       if(err){
+      //         console.log(err);
+      //       }
+      //     });
+      // }
       // console.log(usersList);
       res.send({data : usersList });
     }

@@ -411,17 +411,21 @@ router.post('/upload', upload.single('file'), function (req, res, next) {
 /**
  * Check if one wanghong exists in the system or not
  */
-router.route('/exists/:whname').get(function (req, res, next) {
+router.route('/checkExists/:whname').get(function (req, res, next) {
   let condition = {
     whname: req.params.whname
   };
 
-  WHModel.count(condition, function (err, count) {
+  WHModel.find(condition, {_id:0, whname: 1, avatar: 1}, { limit:3 },function (err, docs) {
     if (err) {
       console.log(err);
     } else {
-      if (count != 0) {
-        res.send({ exists: true });
+      if (docs.length!= 0) {
+        let possible=new Array();
+        for(let d of docs){
+          possible.push(d);
+        }
+        res.send({ exists: true, data: possible });
       } else {
         res.send({ exists: false });
       }

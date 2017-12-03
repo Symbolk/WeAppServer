@@ -6,7 +6,24 @@ const mongoose = require('mongoose');
 var StarModel = mongoose.model('Star');
 var UserModel = mongoose.model('User');
 var util = require('./util.js');
-
+var compare = function (prop) {
+    return function (obj1, obj2) {
+        var val1 = obj1[prop];
+        var val2 = obj2[prop];
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+            val1 = Number(val1);
+            val2 = Number(val2);
+        }
+        if (val1 < val2) {
+            return 1;
+        } else if (val1 > val2) {
+            return -1;
+        } else {
+            return 0;
+        }            
+    } 
+  }
+  
 /**
  * Get all stars in the database, as a string
  */
@@ -55,17 +72,49 @@ router.post('/flowerStar', function (req, res) {
 
             if (!hasFlowered) {
                 if (doc.floweredToday.length < 3) {
-                    // add one flower for the star
-                    operation = {
-                        $inc: {
-                            flowernum: 1
-                        }
-                    };
-                    StarModel.update({ starname: req.body.starname }, operation, function (err) {
-                        if (err) {
+                    // add one flower for the star&add the user to the supporter list
+                    StarModel.find({ starname: req.body.starname, 'supporters.openid':req.body.openid }, {_id:0, supporters: 1}, function(err, docs){
+                        if(err){
                             console.log(err);
-                        } else {
-                            res.send({ msg: req.body.starname + '+1', success: true });
+                        }else{
+                            if(docs.length==0){
+                                // append the new supporter
+                                operation = {
+                                    $inc: {
+                                        flowernum: 1
+                                    },
+                                    $addToSet: {
+                                        supporters:{
+                                            openid: req.body.openid,
+                                            username: req.body.username,
+                                            contribution: 1
+                                        }
+                                    }
+                                };
+                                StarModel.update({ starname: req.body.starname }, operation, function (err) {
+                                    if (err) {
+                                        console.log(err);
+                                    } else {
+                                        res.send({ msg: req.body.starname + '+1', success: true });
+                                    }
+                                });
+                            }else{
+                                operation = {
+                                    $inc: {
+                                        flowernum: 1
+                                    },
+                                    $inc: {
+                                        "supporters.$.contribution" : 1
+                                    }
+                                };
+                                StarModel.update({ starname: req.body.starname, 'supporters.openid':req.body.openid }, operation, function (err) {
+                                    if (err) {
+                                        console.log(err);
+                                    } else {
+                                        res.send({ msg: req.body.starname + '+1', success: true });
+                                    }
+                                });            
+                            }
                         }
                     });
 
@@ -85,7 +134,7 @@ router.post('/flowerStar', function (req, res) {
                             console.log(req.body.username + ' flowered ' + req.body.starname);
                         }
                     });
-                    // add the user's contribution to all flowered stars
+                    // add the user's contribution to flowered stars
                     UserModel.findOne({ openid: req.body.openid }, { _id: 0, flowerHistory: 1 }, function (err, doc) {
                         if (err) {
                             console.log(err);
@@ -148,16 +197,29 @@ router.post('/unflowerStar', function (req, res) {
                 return (p.starname == req.body.starname);
             });
             if (hasFlowered) {
-                operation = {
-                    $inc: {
-                        flowernum: -1
-                    }
-                };
-                StarModel.findOneAndUpdate({ starname: req.body.starname }, operation, function (err) {
-                    if (err) {
+                StarModel.find({ starname: req.body.starname, 'supporters.openid':req.body.openid }, {_id:0, supporters: 1}, function(err, docs){
+                    if(err){
                         console.log(err);
-                    } else {
-                        res.send({ msg: req.body.starname + '-1', success: true });
+                    }else{
+                        if(docs.length==0){
+                            console.log("Unreachable Case.");
+                        }else{
+                            operation = {
+                                $inc: {
+                                    flowernum: -1
+                                },
+                                $inc: {
+                                    "supporters.$.contribution" : -1
+                                }
+                            };
+                            StarModel.update({ starname: req.body.starname, 'supporters.openid':req.body.openid }, operation, function (err) {
+                                if (err) {
+                                    console.log(err);
+                                } else {
+                                    res.send({ msg: req.body.starname + '-1', success: true });
+                                }
+                            });            
+                        }
                     }
                 });
 
@@ -333,6 +395,37 @@ router.get('/getFemaleStars/:oid', function (req, res) {
                 }
             });
 
+        }
+    });
+});
+
+/**
+ * Get and rank all users ever flowered a specific star
+ */
+router.route('/getSupporters/:starname').get(function(req, res, next){
+    console.log( req.params.starname );
+    StarModel.findOne({ starname: req.params.starname }, { _id:0, supporters:1 },function(err, doc){
+        if(err){
+            console.log(err);
+        }else{
+            // rank supporters
+            let temp=doc.supporters;
+            temp=temp.sort(compare("contribution"));
+            console.log(temp);
+            let supporters=new Array();
+            if(temp.length <=100){
+                for(let i=0;i<temp.length;i++){
+                    supporters.push(temp[i]);
+                }
+            }else{
+                for(let i=0;i<100;i++){
+                    supporters.push(temp[i]);
+                }
+            }
+            // find user's avatar and give them titles
+            // TO DO
+            console.log(supporters);
+            res.send({ data: supporters });
         }
     });
 });
