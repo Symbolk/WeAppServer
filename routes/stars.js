@@ -21,8 +21,9 @@ router.get('/', function (req, res, next) {
  * Create some data in the database
  */
 router.get('/createStar', function (req, res) {
+    
     let operation = {
-        id: 3,
+        sid: 3,
         starname: '李易峰',
         sex: 'male',
         avatar: 'http://img4.imgtn.bdimg.com/it/u=1343872547,3812704371&fm=27&gp=0.jpg',
@@ -212,12 +213,13 @@ router.post('/unflowerStar', function (req, res) {
  * Get all stars in the database as an array
  */
 router.get('/getAllStars/:oid', function (req, res) {
-    let fields = { _id: 0, 
+    let fields = {
+        _id: 0, 
         sid: 1, 
         starname: 1, 
         flowernum: 1, 
-        avatar: 1,
-        floweredToday: 1 };
+        avatar: 1
+     };
     StarModel.find({}, fields, { sort: { flowernum: -1 }, limit: 100 }, function (err, docs) {
         if (err) {
             console.log(err);

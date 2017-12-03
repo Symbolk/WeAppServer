@@ -100,6 +100,7 @@ router.route('/getUserInfo/:username').get(function (req, res, next) {
 
 /**
  * Get all ever flowered stars and the user's contributions
+ * for selection in the rank page
  */
 router.route('/getEverStars/:oid').get(function (req, res, next) {
   let condition={
@@ -114,10 +115,10 @@ router.route('/getEverStars/:oid').get(function (req, res, next) {
       console.log(err);
     } else {
       let everFlowered = new Array();
-      for (let d of docs) {
+      for (let d of doc.flowerHistory) {
           everFlowered.push(d);
       }
-      res.send(everFlowered);
+      res.send({data : everFlowered });
     }
   });
 
@@ -168,7 +169,8 @@ router.route('/getAllUsers').get(function(req, res, next){
             }
           });
       }
-      console.log(usersList);
+      // console.log(usersList);
+      res.send({data : usersList });
     }
   });  
 

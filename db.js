@@ -29,6 +29,7 @@ db.once('open', function () {
     avatar:   { type:String },
 	gender:   { type:String },    
     title:    { type:String, default:"青铜" }, // according to his biggest contribution
+    // Star
     favStar: {  // to whom his biggest contribution
         starname: { type: String },
         contribution: { type: Number }
@@ -45,7 +46,20 @@ db.once('open', function () {
             contribution: { type: Number,default:0 }
         }
     ],
-    sumContribution: { type: Number, default:0 }
+    sumContribution: { type: Number, default:0 },
+    // Wanghong
+    floweredWHToday:[ // at most 3 for one day
+        { 
+            whname: { type: String }, 
+            date: { type: String}
+        }
+    ],
+	flowerWHHistory:[
+        {
+            whname: { type: String },
+            contribution: { type: Number,default:0 }
+        }
+    ],
 	// rank:     { type:Number }
 },
     // When no collection argument is passed, Mongoose pluralizes the name.
@@ -77,6 +91,7 @@ var WanghongSchema = new mongoose.Schema({
     sex: { type : String },
 	avatar:   { type:String },
     flowernum:    { type:Number, default:0 },
+    floweredWHToday: { type: Boolean, default:false }, // whether is flowered by the current user today
     score: { type: Number},
     weibo:  { type:String },
     baike:  { type:String },
@@ -84,7 +99,8 @@ var WanghongSchema = new mongoose.Schema({
         {
             link: { type: String }
         }
-    ]
+    ],
+    verified: { type: Boolean, default: false}
 }, { collection: 'wanghongs' });
 var Wanghong = mongoose.model('Wanghong', WanghongSchema, 'wanghongs');
 console.log('Wanghong Model Created.');
