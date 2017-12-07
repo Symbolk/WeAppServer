@@ -30,6 +30,7 @@ router.post('/createWH', function (req, res) {
       let index = docs.length;
       let operation = {
         wid: index,
+        submiter: req.body.openid,     
         // whname: '陈一发儿',
         // sex: 'female',
         // avatar: 'http://img4.imgtn.bdimg.com/it/u=1343872547,3812704371&fm=27&gp=0.jpg',
@@ -38,13 +39,14 @@ router.post('/createWH', function (req, res) {
         avatar: req.body.avatar,
         weibo: req.body.weibo,
         baike: req.body.baike,
+        workLinks: req.body.works,
         flowernum: 0,
       };
       WHModel.create(operation, function (err) {
         if (err) {
           console.log(err);
         } else {
-          console.log('++ ' + operation.whname);
+          console.log('Newly submitted wanghong: ' + operation.whname);
           res.send({ msg: "添加网红成功!" });
         }
       });
@@ -355,7 +357,8 @@ router.get('/getFemaleWHs/:oid', function (req, res) {
 var upload = multer({ dest: '../avatars/' });
 router.post('/upload', upload.single('file'), function (req, res, next) {
   // 文件路径
-  var filePath = './' + req.file.path;
+  var filePath = './' + req.file.filePath;
+  console.log(req.file);
   // 文件类型
   var fileType = req.file.mimetype;
   var format = '';

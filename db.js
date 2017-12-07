@@ -92,6 +92,7 @@ console.log('Star Model Created.');
 // create wanghong(网红) schema
 var WanghongSchema = new mongoose.Schema({
     wid: { type:Number, required:true, unique:true, index:true },
+    submiter: { type:String }, // submiter's openid
     whname: { type:String, required:true },
     sex: { type : String },
 	avatar:   { type:String },
@@ -100,11 +101,7 @@ var WanghongSchema = new mongoose.Schema({
     score: { type: Number},
     weibo:  { type:String },
     baike:  { type:String },
-    links:[
-        {
-            link: { type: String }
-        }
-    ],
+    workLinks:[],
     verified: { type: Boolean, default: false}
 }, { collection: 'wanghongs' });
 var Wanghong = mongoose.model('Wanghong', WanghongSchema, 'wanghongs');
