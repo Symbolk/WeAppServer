@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const config=require('./config/dev');
+const config = require('./config/dev');
 // const config=require('./config/pro');
 const schedule = require('node-schedule');
 const DB_URL = config.database;
@@ -18,45 +18,45 @@ db.on('connected', function () {
 });
 
 db.once('open', function () {
-    console.log('Mongoose connecting to ' + DB_URL);    
+    console.log('Mongoose connecting to ' + DB_URL);
 });
 
-  // create the user schema
-  var UserSchema = new mongoose.Schema({
-    uid: { type:Number, required:true, unique:true},
-    openid: { type: String, required:true, index: true}, // the unique identifier for one user
-	username: { type:String, required:true}, // the nickName in Wechat, may not be unique
-    avatar:   { type:String },
-	gender:   { type:String },
+// create the user schema
+var UserSchema = new mongoose.Schema({
+    uid: { type: Number, required: true, unique: true },
+    openid: { type: String, required: true, index: true }, // the unique identifier for one user
+    username: { type: String, required: true }, // the nickName in Wechat, may not be unique
+    avatar: { type: String },
+    gender: { type: String },
     // Star
     // favStar: {  // to whom his biggest contribution
     //     starname: { type: String },
     //     contribution: { type: Number }
     // }, // guarding star
-	floweredToday:[ // at most 3 for one day
-        { 
-            starname: { type: String }, 
-            date: { type: String}
-        }
-    ],
-	flowerHistory:[
+    floweredToday: [ // at most 3 for one day
         {
             starname: { type: String },
-            contribution: { type: Number,default:0 }
+            date: { type: String }
+        }
+    ],
+    flowerHistory: [
+        {
+            starname: { type: String },
+            contribution: { type: Number, default: 0 }
         }
     ],
     // sumContribution: { type: Number, default:0 },
     // Wanghong
-    floweredWHToday:[ // at most 3 for one day
-        { 
-            whname: { type: String }, 
-            date: { type: String}
-        }
-    ],
-	flowerWHHistory:[
+    floweredWHToday: [ // at most 3 for one day
         {
             whname: { type: String },
-            contribution: { type: Number,default:0 }
+            date: { type: String }
+        }
+    ],
+    flowerWHHistory: [
+        {
+            whname: { type: String },
+            contribution: { type: Number, default: 0 }
         }
     ]
 },
@@ -71,18 +71,19 @@ console.log('User Model Created.');
 
 // create star schema
 var StarSchema = new mongoose.Schema({
-    sid: { type:Number, required:true, unique:true, index:true },
-    starname: { type:String, required:true},
+    sid: { type: Number, required: true, unique: true, index: true },
+    starname: { type: String, required: true },
     sex: { type: String }, //male or female
-	avatar:   { type:String },
-    flowernum:    { type:Number, default:0 },
-    score: { type: Number},
-    floweredToday: { type: Boolean, default:false }, // whether is flowered by the current user today
+    avatar: { type: String },
+    flowernum: { type: Number, default: 0 },
+    score: { type: Number },
+    floweredToday: { type: Boolean, default: false }, // whether is flowered by the current user today
     supporters: [
         {
-            openid: { type:String },
-            username: { type:String },
-            contribution: { type:Number, default:1 }
+            openid: { type: String },
+            username: { type: String },
+            avatar: { type: String },
+            contribution: { type: Number, default: 1 }
         }
     ]
 }, { collection: 'stars' });
@@ -91,18 +92,18 @@ console.log('Star Model Created.');
 
 // create wanghong(网红) schema
 var WanghongSchema = new mongoose.Schema({
-    wid: { type:Number, required:true, unique:true, index:true },
-    submiter: { type:String }, // submiter's openid
-    whname: { type:String, required:true },
-    sex: { type : String },
-	avatar:   { type:String },
-    flowernum:    { type:Number, default:0 },
-    floweredWHToday: { type: Boolean, default:false }, // whether is flowered by the current user today
-    score: { type: Number},
-    weibo:  { type:String },
-    baike:  { type:String },
-    workLinks:[],
-    verified: { type: Boolean, default: false}
+    wid: { type: Number, required: true, unique: true, index: true },
+    submiter: { type: String }, // submiter's openid
+    whname: { type: String, required: true },
+    sex: { type: String },
+    avatar: { type: String },
+    flowernum: { type: Number, default: 0 },
+    floweredWHToday: { type: Boolean, default: false }, // whether is flowered by the current user today
+    score: { type: Number },
+    weibo: { type: String },
+    baike: { type: String },
+    workLinks: [],
+    verified: { type: Boolean, default: false }
 }, { collection: 'wanghongs' });
 var Wanghong = mongoose.model('Wanghong', WanghongSchema, 'wanghongs');
 console.log('Wanghong Model Created.');
@@ -112,19 +113,19 @@ db.on('disconnected', function () {
 });
 
 var rule = new schedule.RecurrenceRule();
-rule.hour =0;rule.minute =0;rule.second =0;
+rule.hour = 0; rule.minute = 0; rule.second = 0;
 // var rule='*/4 * * * * *';
-schedule.scheduleJob(rule, function(){
+schedule.scheduleJob(rule, function () {
     // update the user's flowered today list
-    User.update({}, 
-        { $set: { floweredToday: [] }},
-        {multi: true},function(err){
-        if(err){
-            console.log(err);
-        }else{
-            console.log("FloweredToday has been reset.");
-        }
-    });
+    User.update({},
+        { $set: { floweredToday: [] } },
+        { multi: true }, function (err) {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log("FloweredToday has been reset.");
+            }
+        });
 });
 
 

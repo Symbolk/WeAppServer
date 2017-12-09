@@ -234,7 +234,8 @@ router.get('/getAllWHs/:oid', function (req, res) {
     flowernum: 1,
     avatar: 1
   };
-  WHModel.find({}, fields, { sort: { flowernum: -1 }, limit: 100 }, function (err, docs) {
+  // only verified wanghong are returned
+  WHModel.find({ verified: true }, fields, { sort: { flowernum: -1 }, limit: 100 }, function (err, docs) {
     if (err) {
       console.log(err);
     } else {
@@ -287,7 +288,7 @@ router.get('/getNWHs/:num', function (req, res) {
  * Get a limited number of wanghong(for one page display)
  */
 router.get('/getMaleWHs/:oid', function (req, res) {
-  WHModel.find({ sex: 'male' }, { _id: 0, id: 1, whname: 1, flowernum: 1, avatar: 1, floweredWHToday: 1 }, { sort: { flowernum: -1 } }, function (err, docs) {
+  WHModel.find({ sex: 'male', verified: true }, { _id: 0, id: 1, whname: 1, flowernum: 1, avatar: 1, floweredWHToday: 1 }, { sort: { flowernum: -1 } }, function (err, docs) {
     if (err) {
       console.log(err);
     } else {
@@ -321,7 +322,7 @@ router.get('/getMaleWHs/:oid', function (req, res) {
  * Get a limited number of wanghongs(for one page display)
  */
 router.get('/getFemaleWHs/:oid', function (req, res) {
-  WHModel.find({ sex: 'female' }, { _id: 0, id: 1, whname: 1, flowernum: 1, avatar: 1, floweredWHToday: 1 }, { sort: { flowernum: -1 } }, function (err, docs) {
+  WHModel.find({ sex: 'female', verified: true }, { _id: 0, id: 1, whname: 1, flowernum: 1, avatar: 1, floweredWHToday: 1 }, { sort: { flowernum: -1 } }, function (err, docs) {
     if (err) {
       console.log(err);
     } else {

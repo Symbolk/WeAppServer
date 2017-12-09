@@ -87,6 +87,7 @@ router.post('/flowerStar', function (req, res) {
                                         supporters:{
                                             openid: req.body.openid,
                                             username: req.body.username,
+                                            avatar: req.body.avatar,
                                             contribution: 1
                                         }
                                     }
@@ -403,7 +404,6 @@ router.get('/getFemaleStars/:oid', function (req, res) {
  * Get and rank all users ever flowered a specific star
  */
 router.route('/getSupporters/:starname').get(function(req, res, next){
-    console.log( req.params.starname );
     StarModel.findOne({ starname: req.params.starname }, { _id:0, supporters:1 },function(err, doc){
         if(err){
             console.log(err);
@@ -411,7 +411,6 @@ router.route('/getSupporters/:starname').get(function(req, res, next){
             // rank supporters
             let temp=doc.supporters;
             temp=temp.sort(compare("contribution"));
-            console.log(temp);
             let supporters=new Array();
             if(temp.length <=100){
                 for(let i=0;i<temp.length;i++){
