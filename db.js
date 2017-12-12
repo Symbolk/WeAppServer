@@ -69,7 +69,7 @@ var StarSchema = new mongoose.Schema({
     sex: { type: String }, //male or female
     avatar: { type: String },
     flowernum: { type: Number, default: 0 },
-    score: { type: Number },
+    score: { type: Number, default:0 },
     floweredToday: { type: Boolean, default: false }, // whether is flowered by the current user today
     supporters: [
         {

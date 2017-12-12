@@ -20,10 +20,10 @@ var compare = function (prop) {
             return -1;
         } else {
             return 0;
-        }            
-    } 
-  }
-  
+        }
+    }
+}
+
 /**
  * Get all stars in the database, as a string
  */
@@ -38,7 +38,7 @@ router.get('/', function (req, res, next) {
  * Create some data in the database
  */
 router.get('/createStar', function (req, res) {
-    
+
     let operation = {
         sid: 3,
         starname: '李易峰',
@@ -58,6 +58,41 @@ router.get('/createStar', function (req, res) {
 });
 
 /**
+ * Import stars data from an array of json
+ */
+router.route('/importStars').post(function (req, res, next) {
+    if (req.body) {
+        var index=0;
+        StarModel.find({}, function (err, docs) {
+            if (err) {
+                console.log(err);
+            } else {
+                index= docs.length;
+                for (let s of req.body) {
+                    let operation = {
+                        sid: index++,
+                        starname: s.starname,
+                        sex: s.sex,
+                        avatar: s.avatar,
+                        flowernum: 0,
+                        score: 0
+                    };
+                    StarModel.create(operation, function (err) {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            console.log('++ ' + operation.starname);
+                        }
+                    });
+                }
+            }
+        });
+        res.send({ msg: 'Stars imported.' });
+    }
+});
+
+
+/**
  * Flower one star
  */
 router.post('/flowerStar', function (req, res) {
@@ -73,18 +108,18 @@ router.post('/flowerStar', function (req, res) {
             if (!hasFlowered) {
                 if (doc.floweredToday.length < 3) {
                     // add one flower for the star&add the user to the supporter list
-                    StarModel.find({ starname: req.body.starname, 'supporters.openid':req.body.openid }, {_id:0, supporters: 1}, function(err, docs){
-                        if(err){
+                    StarModel.find({ starname: req.body.starname, 'supporters.openid': req.body.openid }, { _id: 0, supporters: 1 }, function (err, docs) {
+                        if (err) {
                             console.log(err);
-                        }else{
-                            if(docs.length==0){
+                        } else {
+                            if (docs.length == 0) {
                                 // append the new supporter
                                 operation = {
                                     $inc: {
                                         flowernum: 1
                                     },
                                     $addToSet: {
-                                        supporters:{
+                                        supporters: {
                                             openid: req.body.openid,
                                             username: req.body.username,
                                             avatar: req.body.avatar,
@@ -92,7 +127,7 @@ router.post('/flowerStar', function (req, res) {
                                         }
                                     }
                                 };
-                                StarModel.findOneAndUpdate({ starname: req.body.starname }, operation, {new: true}, function (err, doc) {
+                                StarModel.findOneAndUpdate({ starname: req.body.starname }, operation, { new: true }, function (err, doc) {
                                     if (err) {
                                         console.log(err);
                                     } else {
@@ -100,24 +135,24 @@ router.post('/flowerStar', function (req, res) {
                                         res.send({ msg: req.body.starname + '+1', success: true });
                                     }
                                 });
-                            }else{
+                            } else {
                                 operation = {
                                     $inc: {
                                         flowernum: 1
                                     },
                                     $inc: {
-                                        "supporters.$.contribution" : 1
+                                        "supporters.$.contribution": 1
                                     }
                                 };
-                                StarModel.findOneAndUpdate({ starname: req.body.starname, 'supporters.openid':req.body.openid }, operation, {new: true}, function (err, doc) {                                    
-                                // StarModel.update({ starname: req.body.starname, 'supporters.openid':req.body.openid }, operation, function (err) {
+                                StarModel.findOneAndUpdate({ starname: req.body.starname, 'supporters.openid': req.body.openid }, operation, { new: true }, function (err, doc) {
+                                    // StarModel.update({ starname: req.body.starname, 'supporters.openid':req.body.openid }, operation, function (err) {
                                     if (err) {
                                         console.log(err);
                                     } else {
                                         // console.log(doc);
                                         res.send({ msg: req.body.starname + '+1', success: true });
                                     }
-                                });            
+                                });
                             }
                         }
                     });
@@ -201,28 +236,28 @@ router.post('/unflowerStar', function (req, res) {
                 return (p.starname == req.body.starname);
             });
             if (hasFlowered) {
-                StarModel.find({ starname: req.body.starname, 'supporters.openid':req.body.openid }, {_id:0, supporters: 1}, function(err, docs){
-                    if(err){
+                StarModel.find({ starname: req.body.starname, 'supporters.openid': req.body.openid }, { _id: 0, supporters: 1 }, function (err, docs) {
+                    if (err) {
                         console.log(err);
-                    }else{
-                        if(docs.length==0){
+                    } else {
+                        if (docs.length == 0) {
                             console.log("Unreachable Case.");
-                        }else{
+                        } else {
                             operation = {
                                 $inc: {
                                     flowernum: -1
                                 },
                                 $inc: {
-                                    "supporters.$.contribution" : -1
+                                    "supporters.$.contribution": -1
                                 }
                             };
-                            StarModel.update({ starname: req.body.starname, 'supporters.openid':req.body.openid }, operation, function (err) {
+                            StarModel.update({ starname: req.body.starname, 'supporters.openid': req.body.openid }, operation, function (err) {
                                 if (err) {
                                     console.log(err);
                                 } else {
                                     res.send({ msg: req.body.starname + '-1', success: true });
                                 }
-                            });            
+                            });
                         }
                     }
                 });
@@ -280,12 +315,12 @@ router.post('/unflowerStar', function (req, res) {
  */
 router.get('/getAllStars/:oid', function (req, res) {
     let fields = {
-        _id: 0, 
-        sid: 1, 
-        starname: 1, 
-        flowernum: 1, 
+        _id: 0,
+        sid: 1,
+        starname: 1,
+        flowernum: 1,
         avatar: 1
-     };
+    };
     StarModel.find({}, fields, { sort: { flowernum: -1 }, limit: 100 }, function (err, docs) {
         if (err) {
             console.log(err);
@@ -406,21 +441,21 @@ router.get('/getFemaleStars/:oid', function (req, res) {
 /**
  * Get and rank all users ever flowered a specific star
  */
-router.route('/getSupporters/:starname').get(function(req, res, next){
-    StarModel.findOne({ starname: req.params.starname }, { _id:0, supporters:1 },function(err, doc){
-        if(err){
+router.route('/getSupporters/:starname').get(function (req, res, next) {
+    StarModel.findOne({ starname: req.params.starname }, { _id: 0, supporters: 1 }, function (err, doc) {
+        if (err) {
             console.log(err);
-        }else{
+        } else {
             // rank supporters
-            let temp=doc.supporters;
-            temp=temp.sort(compare("contribution"));
-            let supporters=new Array();
-            if(temp.length <=100){
-                for(let i=0;i<temp.length;i++){
+            let temp = doc.supporters;
+            temp = temp.sort(compare("contribution"));
+            let supporters = new Array();
+            if (temp.length <= 100) {
+                for (let i = 0; i < temp.length; i++) {
                     supporters.push(temp[i]);
                 }
-            }else{
-                for(let i=0;i<100;i++){
+            } else {
+                for (let i = 0; i < 100; i++) {
                     supporters.push(temp[i]);
                 }
             }
