@@ -131,25 +131,21 @@ router.post('/flowerStar', function (req, res) {
                                     if (err) {
                                         console.log(err);
                                     } else {
-                                        // console.log(doc);
                                         res.send({ msg: req.body.starname + '+1', success: true });
                                     }
                                 });
                             } else {
                                 operation = {
                                     $inc: {
-                                        flowernum: 1
-                                    },
-                                    $inc: {
+                                        flowernum: 1,
                                         "supporters.$.contribution": 1
                                     }
                                 };
-                                StarModel.findOneAndUpdate({ starname: req.body.starname, 'supporters.openid': req.body.openid }, operation, { new: true }, function (err, doc) {
-                                    // StarModel.update({ starname: req.body.starname, 'supporters.openid':req.body.openid }, operation, function (err) {
+                                // StarModel.findOneAndUpdate({ starname: req.body.starname, 'supporters.openid': req.body.openid }, operation, { new: true }, function (err, doc) {
+                                    StarModel.update({ starname: req.body.starname, 'supporters.openid':req.body.openid }, operation, function (err) {
                                     if (err) {
                                         console.log(err);
                                     } else {
-                                        // console.log(doc);
                                         res.send({ msg: req.body.starname + '+1', success: true });
                                     }
                                 });
@@ -191,7 +187,7 @@ router.post('/flowerStar', function (req, res) {
                                     if (err) {
                                         console.log(err);
                                     } else {
-                                        console.log(req.body.username + "+ 1 for " + req.body.starname);
+                                        console.log(req.body.username + " +1 " + req.body.starname);
                                     }
                                 });
                             } else {
@@ -207,7 +203,7 @@ router.post('/flowerStar', function (req, res) {
                                     if (err) {
                                         console.log(err);
                                     } else {
-                                        console.log(req.body.username + "++1 to " + req.body.starname);
+                                        console.log(req.body.username + " ++1 " + req.body.starname);
                                     }
                                 });
                             }
@@ -245,9 +241,7 @@ router.post('/unflowerStar', function (req, res) {
                         } else {
                             operation = {
                                 $inc: {
-                                    flowernum: -1
-                                },
-                                $inc: {
+                                    flowernum: -1,
                                     "supporters.$.contribution": -1
                                 }
                             };
@@ -295,7 +289,7 @@ router.post('/unflowerStar', function (req, res) {
                                 if (err) {
                                     console.log(err);
                                 } else {
-                                    console.log(req.body.username + "-1 to " + req.body.starname);
+                                    console.log(req.body.username + " -1 " + req.body.starname);
                                 }
                             });
                         } else {
@@ -442,6 +436,8 @@ router.get('/getFemaleStars/:oid', function (req, res) {
  * Get and rank all users ever flowered a specific star
  */
 router.route('/getSupporters/:starname').get(function (req, res, next) {
+    const titles=["青铜","白银","黄金","铂金","钻石","最强王者","荣耀王者"];
+    const separators=[0, 10, 20, 30, 40, 50, 60];
     StarModel.findOne({ starname: req.params.starname }, { _id: 0, supporters: 1 }, function (err, doc) {
         if (err) {
             console.log(err);
@@ -450,18 +446,27 @@ router.route('/getSupporters/:starname').get(function (req, res, next) {
             let temp = doc.supporters;
             temp = temp.sort(compare("contribution"));
             let supporters = new Array();
-            if (temp.length <= 100) {
+            if (temp.length <= 100) {// only get the 100 top users
                 for (let i = 0; i < temp.length; i++) {
+                    for(let j=0;j<separators.length;j++){
+                        if(temp[i].contribution>separators[j] && temp[i].contribution<=separators[j+1]){
+                            temp[i].title=titles[j];
+                        }
+                    }
                     supporters.push(temp[i]);
                 }
             } else {
                 for (let i = 0; i < 100; i++) {
+                    for(let j=0;j<separators.length;j++){
+                        if(temp[i].contribution>separators[j] && temp[i].contribution<=separators[j+1]){
+                            temp[i].title=titles[j];
+                        }
+                    }
                     supporters.push(temp[i]);
                 }
             }
             // find user's avatar and give them titles
             // TO DO
-            console.log(supporters);
             res.send({ data: supporters });
         }
     });

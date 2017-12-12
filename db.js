@@ -76,6 +76,7 @@ var StarSchema = new mongoose.Schema({
             openid: { type: String },
             username: { type: String },
             avatar: { type: String },
+            title : { type: String },
             contribution: { type: Number, default: 1 }
         }
     ]
