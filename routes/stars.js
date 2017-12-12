@@ -92,10 +92,11 @@ router.post('/flowerStar', function (req, res) {
                                         }
                                     }
                                 };
-                                StarModel.update({ starname: req.body.starname }, operation, function (err) {
+                                StarModel.findOneAndUpdate({ starname: req.body.starname }, operation, {new: true}, function (err, doc) {
                                     if (err) {
                                         console.log(err);
                                     } else {
+                                        // console.log(doc);
                                         res.send({ msg: req.body.starname + '+1', success: true });
                                     }
                                 });
@@ -108,10 +109,12 @@ router.post('/flowerStar', function (req, res) {
                                         "supporters.$.contribution" : 1
                                     }
                                 };
-                                StarModel.update({ starname: req.body.starname, 'supporters.openid':req.body.openid }, operation, function (err) {
+                                StarModel.findOneAndUpdate({ starname: req.body.starname, 'supporters.openid':req.body.openid }, operation, {new: true}, function (err, doc) {                                    
+                                // StarModel.update({ starname: req.body.starname, 'supporters.openid':req.body.openid }, operation, function (err) {
                                     if (err) {
                                         console.log(err);
                                     } else {
+                                        // console.log(doc);
                                         res.send({ msg: req.body.starname + '+1', success: true });
                                     }
                                 });            

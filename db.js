@@ -28,11 +28,6 @@ var UserSchema = new mongoose.Schema({
     username: { type: String, required: true }, // the nickName in Wechat, may not be unique
     avatar: { type: String },
     gender: { type: String },
-    // Star
-    // favStar: {  // to whom his biggest contribution
-    //     starname: { type: String },
-    //     contribution: { type: Number }
-    // }, // guarding star
     floweredToday: [ // at most 3 for one day
         {
             starname: { type: String },
@@ -45,8 +40,6 @@ var UserSchema = new mongoose.Schema({
             contribution: { type: Number, default: 0 }
         }
     ],
-    // sumContribution: { type: Number, default:0 },
-    // Wanghong
     floweredWHToday: [ // at most 3 for one day
         {
             whname: { type: String },
@@ -118,7 +111,7 @@ rule.hour = 0; rule.minute = 0; rule.second = 0;
 schedule.scheduleJob(rule, function () {
     // update the user's flowered today list
     User.update({},
-        { $set: { floweredToday: [] } },
+        { $set: { floweredToday: [], floweredWHToday:[] } },
         { multi: true }, function (err) {
             if (err) {
                 console.log(err);

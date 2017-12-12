@@ -6,20 +6,20 @@ const mongoose = require('mongoose');
 var UserModel = mongoose.model('User');
 var compare = function (prop) {
   return function (obj1, obj2) {
-      var val1 = obj1[prop];
-      var val2 = obj2[prop];
-      if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
-          val1 = Number(val1);
-          val2 = Number(val2);
-      }
-      if (val1 < val2) {
-          return 1;
-      } else if (val1 > val2) {
-          return -1;
-      } else {
-          return 0;
-      }            
-  } 
+    var val1 = obj1[prop];
+    var val2 = obj2[prop];
+    if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+      val1 = Number(val1);
+      val2 = Number(val2);
+    }
+    if (val1 < val2) {
+      return 1;
+    } else if (val1 > val2) {
+      return -1;
+    } else {
+      return 0;
+    }
+  }
 }
 
 
@@ -52,17 +52,17 @@ router.route('/exists/:oid').get(function (req, res, next) {
 });
 
 router.post('/createUser', function (req, res, next) {
-  UserModel.find({}, function(err,docs){
-    if(err){
+  UserModel.find({}, function (err, docs) {
+    if (err) {
       console.log(err);
-    }else{
-      let index=docs.length;
+    } else {
+      let index = docs.length;
       let operation = {
         uid: index,
         openid: req.body.openid,
         username: req.body.username,
         avatar: req.body.avatar,
-        sumContribution:0
+        sumContribution: 0
       };
       UserModel.create(operation, function (err, doc) {
         if (err) {
@@ -120,35 +120,41 @@ router.post('/createUser', function (req, res, next) {
  * for selection in the rank page
  */
 router.route('/getEverStars/:oid').get(function (req, res, next) {
-  let condition={
+  let condition = {
     openid: req.params.oid
   };
   let fields = {
     _id: 0,
-    flowerHistory:1
+    flowerHistory: 1
   };
   UserModel.findOne(condition, fields, function (err, doc) {
     if (err) {
       console.log(err);
     } else {
       // sort the flower history with flower num
-      let temp=doc.flowerHistory;
-      temp=temp.sort(compare("contribution"));
-      
+      let temp = doc.flowerHistory;
       let starnames = new Array();
       let contributions = new Array();
-      if(temp.length <= 3){
-        for (let i=0;i<temp.length;i++) {
-          starnames.push(temp[i].starname);
-          contributions.push(temp[i].contribution);
+      if (temp.length == 0) {
+        starnames.push("啥都没有");
+        contributions.push("0");
+        res.send({ starnames: starnames, contributions: contributions });
+      } else {
+        temp = temp.sort(compare("contribution"));
+
+        if (temp.length <= 3) {
+          for (let i = 0; i < temp.length; i++) {
+            starnames.push(temp[i].starname);
+            contributions.push(temp[i].contribution);
+          }
+        } else {
+          for (let i = 0; i < 3; i++) {
+            starnames.push(temp[i].starname);
+            contributions.push(temp[i].contribution);
+          }
         }
-      }else{
-        for (let i=0;i<3;i++) {
-          starnames.push(temp[i].starname);
-          contributions.push(temp[i].contribution);
-        }
+        res.send({ starnames: starnames, contributions: contributions });
       }
-      res.send({starnames : starnames, contributions: contributions });
     }
   });
 });
@@ -157,19 +163,19 @@ router.route('/getEverStars/:oid').get(function (req, res, next) {
 /**
  * Get all users and rank them
  */
-router.route('/getAllUsers').get(function(req, res, next){
-  let fields={
+router.route('/getAllUsers').get(function (req, res, next) {
+  let fields = {
     _id: 0,
     username: 1,
     openid: 1,// just to make sure unique
     avatar: 1,
     flowerHistory: 1
   };
-  
-  UserModel.find({}, fields,  { sort: { sumContribution: -1 }, limit: 100 }, function(err, docs){
-    if(err){
+
+  UserModel.find({}, fields, { sort: { sumContribution: -1 }, limit: 100 }, function (err, docs) {
+    if (err) {
       console.log(err);
-    }else{
+    } else {
       // recompute the favStar and sum contribution for all users
       // let usersList = new Array();
       // for (let d of docs) {
@@ -197,9 +203,9 @@ router.route('/getAllUsers').get(function(req, res, next){
       //     });
       // }
       // console.log(usersList);
-      res.send({data : usersList });
+      res.send({ data: usersList });
     }
-  });  
+  });
 
 });
 
