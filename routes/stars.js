@@ -402,7 +402,8 @@ router.get('/getMaleStars/:oid', function (req, res) {
  * Get a limited number of stars(for one page display)
  */
 router.get('/getFemaleStars/:oid', function (req, res) {
-    StarModel.find({ sex: 'female' }, { _id: 0, id: 1, starname: 1, flowernum: 1, avatar: 1, floweredToday: 1 }, { sort: { flowernum: -1 } }, function (err, docs) {
+    StarModel.find({ sex: 'female' }, { _id: 0, id: 1, starname: 1, flowernum: 1, avatar: 1, floweredToday: 1 }, 
+    { sort: { flowernum: -1 } }, function (err, docs) {
         if (err) {
             console.log(err);
         } else {

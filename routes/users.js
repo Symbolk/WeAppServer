@@ -69,7 +69,7 @@ router.post('/createUser', function (req, res, next) {
           console.log(err);
         } else {
           console.log('New user ' + req.body.username);
-          res.send({ msg: 'Welcome new ' + req.body.username });
+          res.send({ msg: '欢迎 ' + req.body.username });
         }
       });
     }
