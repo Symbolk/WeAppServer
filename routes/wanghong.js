@@ -18,6 +18,67 @@ router.get('/', function (req, res, next) {
   });
 });
 
+/**
+ * Uppload avatar for wanghong
+ */
+var upload = multer({ dest: 'avatars/' });
+var wh_avatar = "wh_";
+router.post('/upload', upload.single('file'), function (req, res, next) {
+  // 文件路径
+  // var filePath = './' + req.file.filePath;
+  var filePath = req.file.path;
+  // 文件类型
+  var fileType = req.file.mimetype;
+  var format = '';
+  switch (fileType) {
+    case 'image/png':
+      format = '.png';
+      break;
+    case 'image/jpeg':
+      format = '.jpg';
+      break;
+    case 'image/jpg':
+      format = '.jpg';
+      break;
+    default:
+      format = '.png';
+      break;
+  }
+  // 构建图片名
+  var fileName = 'avatars/' + Date.now() + format;
+  // 对临时文件转存，fs.rename(oldPath, newPath,callback);
+  fs.rename(filePath, fileName, function(err){
+    if (err) {
+      console.log(err);
+      res.end(JSON.stringify({ status: '102', msg: '头像上传失败' }));
+    } else {
+      wh_avatar=wh_avatar + fileName;
+      console.log('Newly uploaded avatar: '+wh_avatar);
+      // var formUploader = new qiniu.form_up.FormUploader(config);
+      // var putExtra = new qiniu.form_up.PutExtra();
+      // var key = fileName;
+
+      // // 文件上传到七牛云
+      // formUploader.putFile(uploadToken, key, localFile, putExtra, function(respErr,
+      //   respBody, respInfo) {
+      //   if (respErr) {
+      //     res.end(JSON.stringify({status:'101',msg:'上传失败',error:respErr}));   
+      //   }
+      //   if (respInfo.statusCode == 200) {
+      //     var imageSrc = 'http://o9059a64b.bkt.clouddn.com/' + respBody.key;
+      //     res.end(JSON.stringify({status:'100',msg:'上传成功',imageUrl:imageSrc}));   
+      //   } else {
+      //     res.end(JSON.stringify({status:'102',msg:'上传失败',error:JSON.stringify(respBody)}));  
+      //   }
+      //   // 上传之后删除本地文件
+      //   fs.unlinkSync(localFile);
+      // });
+    }
+  });
+  res.writeHead(200, {
+    "Access-Control-Allow-Origin": "*"//允许跨域。。。
+  });
+})
 
 /**
  * Create some data in the database
@@ -37,7 +98,7 @@ router.post('/createWH', function (req, res) {
         whname: req.body.whname,
         sex: req.body.sex,
         // avatar: req.body.avatar,
-        avatar: wh_avatar,
+        avatar: 'https://xcx.toupaiyule.com/avatars/'+wh_avatar,
         weibo: req.body.weibo,
         baike: req.body.baike,
         workLinks: req.body.works,
@@ -353,65 +414,6 @@ router.get('/getFemaleWHs/:oid', function (req, res) {
   });
 });
 
-/**
- * Uppload avatar for wanghong
- */
-var upload = multer({ dest: '../avatars/' });
-var wh_avatar;
-router.post('/upload', upload.single('file'), function (req, res, next) {
-  // 文件路径
-  var filePath = './' + req.file.filePath;
-  // 文件类型
-  var fileType = req.file.mimetype;
-  var format = '';
-  switch (fileType) {
-    case 'image/png':
-      format = '.png';
-      break;
-    case 'image/jpeg':
-      format = '.jpg';
-      break;
-    case 'image/jpg':
-      format = '.jpg';
-      break;
-    default:
-      format = '.png';
-      break;
-  }
-  // 构建图片名
-  var fileName = '../avatars/' + Date.now() + format;
-  // 对临时文件转存，fs.rename(oldPath, newPath,callback);
-  fs.rename(filePath, fileName, function(err){
-    if (err) {
-      res.end(JSON.stringify({ status: '102', msg: '头像上传失败' }));
-    } else {
-      console.log('Newly uploaded avatar:'+fileName);
-      wh_avatar=fileName;
-      // var formUploader = new qiniu.form_up.FormUploader(config);
-      // var putExtra = new qiniu.form_up.PutExtra();
-      // var key = fileName;
-
-      // // 文件上传到七牛云
-      // formUploader.putFile(uploadToken, key, localFile, putExtra, function(respErr,
-      //   respBody, respInfo) {
-      //   if (respErr) {
-      //     res.end(JSON.stringify({status:'101',msg:'上传失败',error:respErr}));   
-      //   }
-      //   if (respInfo.statusCode == 200) {
-      //     var imageSrc = 'http://o9059a64b.bkt.clouddn.com/' + respBody.key;
-      //     res.end(JSON.stringify({status:'100',msg:'上传成功',imageUrl:imageSrc}));   
-      //   } else {
-      //     res.end(JSON.stringify({status:'102',msg:'上传失败',error:JSON.stringify(respBody)}));  
-      //   }
-      //   // 上传之后删除本地文件
-      //   fs.unlinkSync(localFile);
-      // });
-    }
-  });
-  res.writeHead(200, {
-    "Access-Control-Allow-Origin": "*"//允许跨域。。。
-  });
-})
 
 /**
  * Check if one wanghong exists in the system or not
