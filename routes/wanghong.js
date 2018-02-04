@@ -21,7 +21,7 @@ router.get('/', function (req, res, next) {
 /**
  * Uppload avatar for wanghong
  */
-var upload = multer({ dest: '../public/avatars/' });
+var upload = multer({ dest: '/public/avatars/' });
 var wh_avatar = "";
 router.post('/upload', upload.single('file'), function (req, res, next) {
   // 文件路径
@@ -45,7 +45,7 @@ router.post('/upload', upload.single('file'), function (req, res, next) {
       break;
   }
   // 构建图片名
-  var fileName = '../public/avatars/' + Date.now() + format;
+  var fileName = 'public/avatars/' + Date.now() + format;
   // 对临时文件转存，fs.rename(oldPath, newPath,callback);
   fs.rename(filePath, fileName, function(err){
     if (err) {
@@ -73,6 +73,7 @@ router.post('/upload', upload.single('file'), function (req, res, next) {
       //   // 上传之后删除本地文件
       //   fs.unlinkSync(localFile);
       // });
+      res.end(JSON.stringify({ statusCode: '200'}));
     }
   });
   res.writeHead(200, {
@@ -88,6 +89,7 @@ router.post('/createWH', function (req, res) {
     if (err) {
       console.log(err);
     } else {
+      console.log('https://xcx.toupaiyule.com/avatars/'+wh_avatar);
       let index = docs.length;
       let operation = {
         wid: index,
@@ -98,7 +100,7 @@ router.post('/createWH', function (req, res) {
         whname: req.body.whname,
         sex: req.body.sex,
         // avatar: req.body.avatar,
-        avatar: wh_avatar,
+        avatar: 'https://xcx.toupaiyule.com/avatars/'+wh_avatar,
         weibo: req.body.weibo,
         baike: req.body.baike,
         workLinks: req.body.works,
