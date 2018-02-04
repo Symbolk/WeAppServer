@@ -21,8 +21,8 @@ router.get('/', function (req, res, next) {
 /**
  * Uppload avatar for wanghong
  */
-var upload = multer({ dest: 'avatars/' });
-var wh_avatar = "wh_";
+var upload = multer({ dest: '../public/avatars/' });
+var wh_avatar = "";
 router.post('/upload', upload.single('file'), function (req, res, next) {
   // 文件路径
   // var filePath = './' + req.file.filePath;
@@ -45,14 +45,14 @@ router.post('/upload', upload.single('file'), function (req, res, next) {
       break;
   }
   // 构建图片名
-  var fileName = 'avatars/' + Date.now() + format;
+  var fileName = '../public/avatars/' + Date.now() + format;
   // 对临时文件转存，fs.rename(oldPath, newPath,callback);
   fs.rename(filePath, fileName, function(err){
     if (err) {
       console.log(err);
       res.end(JSON.stringify({ status: '102', msg: '头像上传失败' }));
     } else {
-      wh_avatar=wh_avatar + fileName;
+      wh_avatar = fileName;
       console.log('Newly uploaded avatar: '+wh_avatar);
       // var formUploader = new qiniu.form_up.FormUploader(config);
       // var putExtra = new qiniu.form_up.PutExtra();
@@ -98,7 +98,7 @@ router.post('/createWH', function (req, res) {
         whname: req.body.whname,
         sex: req.body.sex,
         // avatar: req.body.avatar,
-        avatar: 'https://xcx.toupaiyule.com/avatars/'+wh_avatar,
+        avatar: wh_avatar,
         weibo: req.body.weibo,
         baike: req.body.baike,
         workLinks: req.body.works,
