@@ -327,17 +327,19 @@ router.get('/getAllStars/:oid', function (req, res) {
                 if (err) {
                     console.log(err);
                 } else {
-                    for (let d of allStarsList) {
-                        let hasFlowered = doc.floweredToday.some(function (p) {
-                            return (p.starname == d.starname);
-                        });
-                        if (hasFlowered) {
-                            d.floweredToday = true;
-                        } else {
-                            d.floweredToday = false;
+                    if (doc) {
+                        for (let d of allStarsList) {
+                            let hasFlowered = doc.floweredToday.some(function (p) {
+                                return (p.starname == d.starname);
+                            });
+                            if (hasFlowered) {
+                                d.floweredToday = true;
+                            } else {
+                                d.floweredToday = false;
+                            }
                         }
+                        res.send({ data: allStarsList });
                     }
-                    res.send({ data: allStarsList });
                 }
             });
         }
@@ -402,35 +404,35 @@ router.get('/getMaleStars/:oid', function (req, res) {
  * Get a limited number of stars(for one page display)
  */
 router.get('/getFemaleStars/:oid', function (req, res) {
-    StarModel.find({ sex: 'female' }, { _id: 0, id: 1, starname: 1, flowernum: 1, avatar: 1, floweredToday: 1 }, 
-    { sort: { flowernum: -1 } }, function (err, docs) {
-        if (err) {
-            console.log(err);
-        } else {
-            let allStarsList = new Array();
-            for (let d of docs) {
-                allStarsList.push(d);
-            }
-            UserModel.findOne({ openid: req.params.oid }, { _id: 0, floweredToday: 1 }, function (err, doc) {
-                if (err) {
-                    console.log(err);
-                } else {
-                    for (let d of allStarsList) {
-                        let hasFlowered = doc.floweredToday.some(function (p) {
-                            return (p.starname == d.starname);
-                        });
-                        if (hasFlowered) {
-                            d.floweredToday = true;
-                        } else {
-                            d.floweredToday = false;
-                        }
-                    }
-                    res.send({ data: allStarsList });
+    StarModel.find({ sex: 'female' }, { _id: 0, id: 1, starname: 1, flowernum: 1, avatar: 1, floweredToday: 1 },
+        { sort: { flowernum: -1 } }, function (err, docs) {
+            if (err) {
+                console.log(err);
+            } else {
+                let allStarsList = new Array();
+                for (let d of docs) {
+                    allStarsList.push(d);
                 }
-            });
+                UserModel.findOne({ openid: req.params.oid }, { _id: 0, floweredToday: 1 }, function (err, doc) {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        for (let d of allStarsList) {
+                            let hasFlowered = doc.floweredToday.some(function (p) {
+                                return (p.starname == d.starname);
+                            });
+                            if (hasFlowered) {
+                                d.floweredToday = true;
+                            } else {
+                                d.floweredToday = false;
+                            }
+                        }
+                        res.send({ data: allStarsList });
+                    }
+                });
 
-        }
-    });
+            }
+        });
 });
 
 /**
