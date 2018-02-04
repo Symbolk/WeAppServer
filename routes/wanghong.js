@@ -36,7 +36,8 @@ router.post('/createWH', function (req, res) {
         // avatar: 'http://img4.imgtn.bdimg.com/it/u=1343872547,3812704371&fm=27&gp=0.jpg',
         whname: req.body.whname,
         sex: req.body.sex,
-        avatar: req.body.avatar,
+        // avatar: req.body.avatar,
+        avatar: wh_avatar,
         weibo: req.body.weibo,
         baike: req.body.baike,
         workLinks: req.body.works,
@@ -356,10 +357,10 @@ router.get('/getFemaleWHs/:oid', function (req, res) {
  * Uppload avatar for wanghong
  */
 var upload = multer({ dest: '../avatars/' });
+var wh_avatar;
 router.post('/upload', upload.single('file'), function (req, res, next) {
   // 文件路径
   var filePath = './' + req.file.filePath;
-  console.log(req.file);
   // 文件类型
   var fileType = req.file.mimetype;
   var format = '';
@@ -380,12 +381,12 @@ router.post('/upload', upload.single('file'), function (req, res, next) {
   // 构建图片名
   var fileName = '../avatars/' + Date.now() + format;
   // 对临时文件转存，fs.rename(oldPath, newPath,callback);
-  fs.rename(filePath, fileName, (err) => {
+  fs.rename(filePath, fileName, function(err){
     if (err) {
       res.end(JSON.stringify({ status: '102', msg: '头像上传失败' }));
     } else {
-      console.log('Newly uploaded avatar.');
-
+      console.log('Newly uploaded avatar:'+fileName);
+      wh_avatar=fileName;
       // var formUploader = new qiniu.form_up.FormUploader(config);
       // var putExtra = new qiniu.form_up.PutExtra();
       // var key = fileName;
