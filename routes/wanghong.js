@@ -45,14 +45,15 @@ router.post('/upload', upload.single('file'), function (req, res, next) {
       break;
   }
   // 构建图片名
-  var fileName = 'public/avatars/' + Date.now() + format;
+  var timeStamp = Date.now();
+  var fileName = 'public/avatars/' + timeStamp + format;
   // 对临时文件转存，fs.rename(oldPath, newPath,callback);
   fs.rename(filePath, fileName, function(err){
     if (err) {
       console.log(err);
       res.end(JSON.stringify({ status: '102', msg: '头像上传失败' }));
     } else {
-      wh_avatar = fileName;
+      wh_avatar = timeStamp + format;
       console.log('Newly uploaded avatar: '+wh_avatar);
       // var formUploader = new qiniu.form_up.FormUploader(config);
       // var putExtra = new qiniu.form_up.PutExtra();
@@ -89,7 +90,6 @@ router.post('/createWH', function (req, res) {
     if (err) {
       console.log(err);
     } else {
-      console.log('https://xcx.toupaiyule.com/avatars/'+wh_avatar);
       let index = docs.length;
       let operation = {
         wid: index,
